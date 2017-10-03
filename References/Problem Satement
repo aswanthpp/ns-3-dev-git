@@ -1,0 +1,10 @@
+
+Topic : Extend DHCPv4 implementation in ns3 to support DHCP(or BOOTP) Relay
+
+Brief :
+   RFC 2131 Defines basic DHCP.
+	DHCPv4 implemented in ns3 doesnot support DHCP Relay
+
+References : 
+1. DHCP Protocol (RFC 2131)( https://tools.ietf.org/html/rfc2131 )
+2. DHCP module for Ipv4 in ns3 
