@@ -12,4 +12,4 @@ does​ ​ not​ ​ support​ ​ DHCP​ ​ Relay​ ​ functionality.
 
 [1]  RFC​ ​ 2131:​ ​ Dynamic​ ​ Host​ ​ Configuration​ ​ Protocol​ ​ ( https://tools.ietf.org/html/rfc2131​ )
 
-[2]  DHCP​ ​ module​ ​ for​ ​ IPv4​ ​ in​ ​ ns-3​ ​ (src/internet-apps/model)
+[2]  DHCP​ ​ module​ ​ for​ ​ IPv4​ ​ in​ ​ ns-3​ ​ ( src/internet-apps/model )
