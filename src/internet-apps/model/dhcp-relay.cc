@@ -54,7 +54,6 @@ namespace ns3 {
 		m_socket->Bind (local);
 		m_socket->SetRecvPktInfo (true);
 		m_socket->SetRecvCallback (MakeCallback (&DhcpServer::NetHandler, this));
-
 	}
 
 	void DhcpRelay::StopApplication ()
@@ -71,41 +70,40 @@ namespace ns3 {
 	}
 
 	void DhcpRelay::NetHandler (Ptr<Socket> socket)
-{
-  NS_LOG_FUNCTION (this << socket);
+  {
+    NS_LOG_FUNCTION (this << socket);
 
-  DhcpHeader header; 
-  Ptr<Packet> packet = 0;
-  Address from;
-  packet = m_socket->RecvFrom (from); //Read a single packet from the socket and retrieve the sender address. 
+    DhcpHeader header; 
+    Ptr<Packet> packet = 0;
+    Address from;
+    packet = m_socket->RecvFrom (from); //Read a single packet from the socket and retrieve the sender address. 
 
-  InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  // returns corresponding inetsocket address of argument
+    InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  // returns corresponding inetsocket address of argument
 
-  Ipv4PacketInfoTag interfaceInfo;
+    Ipv4PacketInfoTag interfaceInfo;
   if (!packet->RemovePacketTag (interfaceInfo))  /// true if the requested tag is found, false otherwise. 
-    {
-      NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
-    }
+  {
+    NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
+  }
   uint32_t incomingIf = interfaceInfo.GetRecvIf ();  /// Get the tag's receiving interface. 
   Ptr<NetDevice> iDev = GetNode ()->GetDevice (incomingIf);   // pointer to the incoming interface
 
   if (packet->RemoveHeader (header) == 0)  /// Deserialize and remove the header from the internal buffer. 
-    {
-      return;
-    }
+  {
+    return;
+  }
   if (header.GetType () == DhcpHeader::DHCPDISCOVER)
-    {
+  {
       //SendOffer (iDev, header, senderAddr); // sends offer if it is of type DHCPDISCOVER
 
     	// instead I need to Do SendDiscover to known server
-    	header.setGiAddr(DynamicCast<Ipv4>(iDev.GetAddress ())); // how to get incoming interface??
-    	sendDiscover(header,m_relayAddress); // to do the function definition
+    	SendDiscover(iDev,header,m_relayAddress); // to do the function definition
     }
-  if (header.GetType () == DhcpHeader::DHCPREQ && (header.GetReq ()).Get () >= m_minAddress.Get () && (header.GetReq ()).Get () <= m_maxAddress.Get ())
+    if (header.GetType () == DhcpHeader::DHCPREQ && (header.GetReq ()).Get () >= m_minAddress.Get () && (header.GetReq ()).Get () <= m_maxAddress.Get ())
     {
       //SendAck (iDev, header, senderAddr);  // sends ack if it is of type DHCPREQUEST
     	//instead sendReq to Sevrer
-    	header.setGiAddr(iDev.GetAddress ());
+    	header.setGiAddr(DynamicCast<Ipv4>(iDev.GetAddress ()));
     	SendReq(header,m_relayAddress);
     }
    /* if (packet->RemoveHeader (header) == 0)
@@ -131,45 +129,43 @@ namespace ns3 {
       //instead forward to client
     	SendAckClient(header);
     }
-  
 
-}
-void DhcpRelay::SendDiscover(DhcpHeader header,Ipv4Address relayAddress){
-	 packet = Create<Packet> ();
-	  packet->AddHeader (header); // adding dhcp header to packet
 
-}
-void DhcpRelay::OfferHandler(DhcpHeader header,Ipv4Address relayAddress){
-	NS_LOG_FUNCTION (this << header);
+  }
+
+  void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from){
+
+    packet = Create<Packet> ();
+    header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ())); 
+    
+    packet->AddHeader (header);
+
+    if ((m_socket->SendTo (packet, 0, InetSocketAddress (m_dhcps, DHCP_PEER_PORT))) >= 0)
+    {
+      NS_LOG_INFO ("DHCP DISCOVER send to server");
+    }
+    else
+    {
+      NS_LOG_INFO ("Error while sending DHCP DISCOVER to server");
+    }
+  }
+
+  void DhcpRelay::OfferHandler(DhcpHeader header,Ipv4Address relayAddress){
+   NS_LOG_FUNCTION (this << header);
 // header.getGiAddr() return the router interface.
   // broadcast forward packet to client
 	// 
-}
-void DhcpRelay::SendAckClient(DhcpHeader header,Ipv4Address relayAddress){
+ }
+ void DhcpRelay::sendAckClient(DhcpHeader header,Ipv4Address relayAddress){
 	// header.getGiAddr()  return the router interface
 	// broadcast this header to client  
-}
-void DhcpRlay::SendReq(DhcpHeader header,Ipv4Address relayAddress){
-	//sent the request to server unicast
-packet = Create<Packet> ();
-packet->AddHeader (header);
- if ((m_socket->SendTo (packet, 0, InetSocketAddress (m_dhcps, from.GetPort ()))) >= 0)
-        {
-          NS_LOG_INFO ("DHCP OFFER" << " Offered Address: " << offeredAddress);
-          // Send data to a specified peer. 
-         // -1 in case of error or the number of bytes copied in the internal buffer and accepted for transmission. 
-        }
-      else
-        {
-          NS_LOG_INFO ("Error while sending DHCP OFFER");
-        }
+ }
+ void DhcpRlay::
 
-}
-	
-	
 
-	
-	
+
+
+
 
 
 }
