@@ -324,6 +324,7 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
       packet->AddHeader (newDhcpHeader);// adding dhcp header to packet
 
       if ((m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
+        
         {
           NS_LOG_INFO ("DHCP OFFER" << " Offered Address: " << offeredAddress);
           // Send data to a specified peer. 

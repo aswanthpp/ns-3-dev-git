@@ -53,7 +53,7 @@ namespace ns3 {
 		m_socket->BindToNetDevice (ipv4->GetNetDevice (ifIndex));
 		m_socket->Bind (local);
 		m_socket->SetRecvPktInfo (true);
-		m_socket->SetRecvCallback (MakeCallback (&DhcpServer::NetHandler, this));
+		m_socket->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandler, this));
 	}
 
 	void DhcpRelay::StopApplication ()
