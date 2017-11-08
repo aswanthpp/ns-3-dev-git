@@ -54,16 +54,16 @@ namespace ns3 {
     void NetHandler (Ptr<Socket> socket);
 
      /*unicast to server from relay DHCPDISCOVER*/
-    void SendDiscover(DhcpHeader header,Ipv4Address relayAddress);
+    void SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from);
 
     /* unicast to server from relay DHCPREQUEST*/
-    void SendReq(DhcpHeader header,Ipv4Address relayAddress);
+    void SendReq(DhcpHeader header,InetSocketAddress from);
 
     /*broadcast offers to client */
-    void OfferHandler(DhcpHeader header,Ipv4Address relayAddress);
+    void OfferHandler(DhcpHeader header,InetSocketAddress from);
 
     /* broadcast ack or nack to client*/
-    void SendAckClient(DhcpHeader header,Ipv4Address relayAddress);
+    void SendAckClient(DhcpHeader header,InetSocketAddress from);
 
     Ipv4Address m_relayAddress;            /// !<Address assigned to the relay>!
     Ipv4Address m_dhcps;
