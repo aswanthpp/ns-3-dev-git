@@ -52,18 +52,19 @@ namespace ns3 {
      * \param socket Socket bound to port 67 of the DHCP server
      */
     void NetHandlerClient (Ptr<Socket> socket);
+     void NetHandlerServer (Ptr<Socket> socket);
 
      /*unicast to server from relay DHCPDISCOVER*/
-    void SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from);
+    void SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header);
 
     /* unicast to server from relay DHCPREQUEST*/
-    void SendReq(DhcpHeader header,InetSocketAddress from);
+    void SendReq(DhcpHeader header);
 
     /*broadcast offers to client */
-    void OfferHandler(DhcpHeader header,InetSocketAddress from);
+    void SendOffer(DhcpHeader header);
 
     /* broadcast ack or nack to client*/
-    void SendAckClient(DhcpHeader header,InetSocketAddress from);
+    void SendAckClient(DhcpHeader header);
 
      Ptr<Socket> m_socket_client; // socket communicating with client
      Ptr<Socket> m_sokcet_server;   // socket communicating with dhcp server   

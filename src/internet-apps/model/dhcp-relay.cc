@@ -115,7 +115,7 @@ namespace ns3 {
 
   		if (header.GetType () == DhcpHeader::DHCPDISCOVER)
 	  		{
-			    SendDiscover(iDev,header,m_relayAddress); 
+			    SendDiscover(iDev,header); 
 			}
 		    
 		if (header.GetType () == DhcpHeader::DHCPREQ)
@@ -157,7 +157,7 @@ namespace ns3 {
 	  		} 
 	  	if (header.GetType () == DhcpHeader::DHCPOFFER)
 		    {
-		    	OfferHandler (header,m_relayAddress);
+		    	SendOffer(iDev,header);
 		    }
 
 	    if (header.GetType () == DhcpHeader::DHCPACK || header.GetType () == DhcpHeader::DHCPNACK)
@@ -168,14 +168,14 @@ namespace ns3 {
 
     }
 
-	void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from)
+	void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev,DhcpHeader header)
 	{
 		Ptr<Packet> packet = Create<Packet> ();
 		header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ())); 
 
 		packet->AddHeader (header);
 
-		if ((m_socket->SendTo (packet, 0, InetSocketAddress (m_dhcps, DHCP_PEER_PORT))) >= 0)
+		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
 			{
 				NS_LOG_INFO ("DHCP DISCOVER send to server");
 			}
@@ -184,7 +184,7 @@ namespace ns3 {
 				NS_LOG_INFO ("Error while sending DHCP DISCOVER to server");
 			}
 	}
-	void DhcpRelay::OfferHandler(DhcpHeader header,Ipv4Address relayAddress)
+	void DhcpRelay::SendOffer(DhcpHeader header)
 	{		
 
 		NS_LOG_FUNCTION (this << header);
@@ -192,7 +192,7 @@ namespace ns3 {
 		packet = Create<Packet> ();
 		packet->AddHeader (header);
 		
-		if ((m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
+		if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
 	        {
 	          NS_LOG_INFO ("DHCP OFFER Sent to Client");
 	          // Send data to a specified peer. 
@@ -206,7 +206,7 @@ namespace ns3 {
 	    // broadcast forward packet to client
 	 
 	}
-	void DhcpRelay::SendReq(DhcpHeader header,Ipv4Address relayAddress)
+	void DhcpRelay::SendReq(DhcpHeader header)
 	{		
 
 		// header.getGiAddr()  return the router interface
@@ -218,7 +218,7 @@ namespace ns3 {
   		Ptr<Packet> packet;
 
   		packet->AddHeader(header);
-	    if(m_socket->SendTo (packet, 0, InetSocketAddress (m_dhcps, DHCP_PEER_PORT)) >= 0);
+	    if(m_socket_client->SendTo (packet, 0, InetSocketAddress (m_dhcps, DHCP_PEER_PORT)) >= 0);
 	    	{
 	    		NS_LOG_INFO ("DHCP REQUEST sent from Relay agent to Client");
 	    	}
@@ -227,7 +227,7 @@ namespace ns3 {
 	    		NS_LOG_INFO("Error while sending DHCPREQ to" << m_dhcps);
 	    	}	    
 	}
-	void DhcpRelay::SendAckClient(DhcpHeader header,Ipv4Address relayAddress)
+	void DhcpRelay::SendAckClient(DhcpHeader header)
 	{
 		
 	}
