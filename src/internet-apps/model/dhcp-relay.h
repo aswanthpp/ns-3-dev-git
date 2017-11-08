@@ -38,6 +38,9 @@ namespace ns3 {
       DhcpRelay ();
       virtual ~DhcpRelay ();
 
+      Ptr<NetDevice> GetDhcpRelayNetDevice (void)
+      void SetDhcpRelayNetDevice (Ptr<NetDevice> netDevice);  
+      
     /*Get the IPv4Address of current DHCP server*/
       Ipv4Address GetDhcpServer (void);
 
@@ -68,6 +71,8 @@ namespace ns3 {
 
      Ptr<Socket> m_socket_client; // socket communicating with client
      Ptr<Socket> m_sokcet_server;   // socket communicating with dhcp server   
+
+    Ptr<NetDevice> m_device;
 
     Ipv4Address m_relayAddress;            /// !<Address assigned to the relay>!
     Ipv4Address m_dhcps;

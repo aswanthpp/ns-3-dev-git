@@ -22,6 +22,8 @@ namespace ns3 {
         /*Set DHCP server attributes*/
 		void SetServerAttribute (std::string name, const AttributeValue &value);
 
+        void SetRelayAttribute (std::string name,const AttributeValue &value)
+
         /*Install DHCP client of a node / NetDevice
         netDevice : The NetDevice that the DHCP client will use
         returns : The application container with DHCP client installed*/
@@ -48,6 +50,8 @@ namespace ns3 {
 			Ipv4Address minAddr, Ipv4Address maxAddr,
 			Ipv4Address gateway = Ipv4Address ());
 
+
+        ApplicationContainer InstallDhcpRelayClient (Ptr<NetDevice> netDevice, Ipv4Address clientAddress,Ipv4Address dhcpServer);
         /*Assign a fixed IP addresses to a net device.
         netDevice : The NetDevice on which the address has to be installed
         addr : The Ipv4Address
