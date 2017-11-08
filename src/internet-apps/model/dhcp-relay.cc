@@ -47,29 +47,39 @@ namespace ns3 {
 	void DhcpRelay::StartApplication (void)	
 	{
 		TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
-		m_socket = Socket::CreateSocket (GetNode (), tid);
-		InetSocketAddress local = InetSocketAddress (Ipv4Address::GetAny (), PORT);
-		m_socket->SetAllowBroadcast (true);
-		m_socket->BindToNetDevice (ipv4->GetNetDevice (ifIndex));
-		m_socket->Bind (local);
-		m_socket->SetRecvPktInfo (true);
-		m_socket->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandler, this));
+		m_socket_client = Socket::CreateSocket (GetNode (), tid);
+		InetSocketAddress local_client = InetSocketAddress (Ipv4Address::GetAny (), PORT_CLIENT);
+		m_socket_client->SetAllowBroadcast (true);
+		//m_socket_client->BindToNetDevice (ipv4->GetNetDevice (ifIndex));
+		m_socket_client->Bind (local_client);
+		m_socket_client->SetRecvPktInfo (true);
+		m_socket_client->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerClient, this));
+
+		m_sokcet_server = Socket::CreateSocket (GetNode (), tid);
+		InetSocketAddress local_server = InetSocketAddress (m_relayAddress, PORT_SERVER);
+		m_sokcet_server->Bind (local_server);
+		m_sokcet_server->SetRecvPktInfo (true);
+		m_sokcet_server->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerServer, this));
+
+
+
+
 	}
 
 	void DhcpRelay::StopApplication ()
 	{
 		//NS_LOG_FUNCTION (this);
 
-		if (m_socket != 0)
+		if (m_socket_client != 0)
 			{
-				m_socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
+				m_socket_client->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
 			}
 
 		//m_leasedAddresses.clear ();
 		//Simulator::Remove (m_expiredEvent);
 	}
 
-	void DhcpRelay::NetHandler (Ptr<Socket> socket)
+	void DhcpRelay::NetHandlerClient (Ptr<Socket> socket)
 	{
 		NS_LOG_FUNCTION (this << socket);
 
@@ -78,7 +88,7 @@ namespace ns3 {
 		Address from;
 
 		/*Read a single packet from the socket and retrieve the sender address*/
-   		packet = m_socket->RecvFrom (from);  
+   		packet = m_socket_client->RecvFrom (from);  
 
         /*Returns corresponding inetsocket address of argument*/
     	InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  
@@ -113,7 +123,38 @@ namespace ns3 {
 			    SendReq(header,m_relayAddress);
 			}
 
-	    if (header.GetType () == DhcpHeader::DHCPOFFER)
+	    
+    }
+
+    void DhcpRelay::NetHandlerServer(Ptr<Socket> socket){
+    	NS_LOG_FUNCTION (this << socket);
+
+		DhcpHeader header; 
+		Ptr<Packet> packet = 0;
+		Address from;
+
+		/*Read a single packet from the socket and retrieve the sender address*/
+   		packet = m_socket_client->RecvFrom (from); 
+   		InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  
+   		Ipv4PacketInfoTag interfaceInfo;
+    	/*True if the requested tag is found, false otherwise*/
+  		if (!packet->RemovePacketTag (interfaceInfo))   
+	  		{
+	  			NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
+	  		}
+        
+        /*Get the tag's receiving interface*/
+  		uint32_t incomingIf = interfaceInfo.GetRecvIf ();   
+
+  		/*Pointer to the incoming interface*/
+  		Ptr<NetDevice> iDev = GetNode ()->GetDevice (incomingIf);   
+
+        /*Deserialize and remove the header from the internal buffer*/
+  		if (packet->RemoveHeader (header) == 0)   
+	  		{
+	  			return;
+	  		} 
+	  	if (header.GetType () == DhcpHeader::DHCPOFFER)
 		    {
 		    	OfferHandler (header,m_relayAddress);
 		    }
@@ -122,6 +163,8 @@ namespace ns3 {
 		    {
 		      SendAckClient(header);
 		    }
+
+
     }
 
 	void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from)
@@ -141,12 +184,9 @@ namespace ns3 {
 			}
 	}
 
-<<<<<<< HEAD
+
 	void DhcpRelay::OfferHandler(DhcpHeader header,Ipv4Address relayAddress){
-		
-=======
-	void DhcpRelay::OfferHandler(DhcpHeader header,InetSocketAddress from){
->>>>>>> a66be5ef0cc69f3c1b76192ed4663691589528bd
+
 		NS_LOG_FUNCTION (this << header);
 		packet = Create<Packet> ();
 		 packet->AddHeader (header);
@@ -164,13 +204,11 @@ namespace ns3 {
 	    // broadcast forward packet to client
 	 
 	}
-<<<<<<< HEAD
+
 
 	void DhcpRelay::SendReq(DhcpHeader header,Ipv4Address relayAddress)
 	{		
-=======
-	void DhcpRelay::sendAckClient(DhcpHeader header,InetSocketAddress from){
->>>>>>> a66be5ef0cc69f3c1b76192ed4663691589528bd
+
 		// header.getGiAddr()  return the router interface
 		// broadcast this header to client 
 

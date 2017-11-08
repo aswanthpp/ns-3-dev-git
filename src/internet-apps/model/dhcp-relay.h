@@ -45,13 +45,13 @@ namespace ns3 {
       virtual void DoDispose (void);
 
     private:
-    static const int PORT = 67;                       //!< Port number of DHCP server
-
+    static const int PORT_CLIENT = 67;                       //!< Port number of DHCP client
+    static const int PORT_SERVER = 68;                       //!< Port number of DHCP server
     /**
      * \brief Handles incoming packets from the network
      * \param socket Socket bound to port 67 of the DHCP server
      */
-    void NetHandler (Ptr<Socket> socket);
+    void NetHandlerClient (Ptr<Socket> socket);
 
      /*unicast to server from relay DHCPDISCOVER*/
     void SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from);
@@ -65,8 +65,12 @@ namespace ns3 {
     /* broadcast ack or nack to client*/
     void SendAckClient(DhcpHeader header,InetSocketAddress from);
 
+     Ptr<Socket> m_socket_client; // socket communicating with client
+     Ptr<Socket> m_sokcet_server;   // socket communicating with dhcp server   
+
     Ipv4Address m_relayAddress;            /// !<Address assigned to the relay>!
     Ipv4Address m_dhcps;
+
 };
 
 } 
