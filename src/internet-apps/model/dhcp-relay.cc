@@ -46,8 +46,8 @@ namespace ns3 {
 
 	void DhcpRelay::StartApplication (void)	
 	{
-		TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
-		m_socket_client = Socket::CreateSocket (GetNode (), tid);
+		TypeId tid_client = TypeId::LookupByName ("ns3::UdpSocketFactory");
+		m_socket_client = Socket::CreateSocket (GetNode (), tid_client);
 		InetSocketAddress local_client = InetSocketAddress (Ipv4Address::GetAny (), PORT_CLIENT);
 		m_socket_client->SetAllowBroadcast (true);
 		//m_socket_client->BindToNetDevice (ipv4->GetNetDevice (ifIndex));
@@ -55,7 +55,8 @@ namespace ns3 {
 		m_socket_client->SetRecvPktInfo (true);
 		m_socket_client->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerClient, this));
 
-		m_sokcet_server = Socket::CreateSocket (GetNode (), tid);
+		TypeId tid_server = TypeId::LookupByName ("ns3::UdpSocketFactory");
+		m_sokcet_server = Socket::CreateSocket (GetNode (), tid_server);
 		InetSocketAddress local_server = InetSocketAddress (m_relayAddress, PORT_SERVER);
 		m_sokcet_server->Bind (local_server);
 		m_sokcet_server->SetRecvPktInfo (true);
