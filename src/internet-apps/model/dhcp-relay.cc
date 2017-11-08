@@ -141,13 +141,25 @@ namespace ns3 {
 		}
 	}
 
-	void DhcpRelay::OfferHandler(DhcpHeader header,Ipv4Address relayAddress){
+	void DhcpRelay::OfferHandler(DhcpHeader header,InetSocketAddress from){
 		NS_LOG_FUNCTION (this << header);
+		packet = Create<Packet> ();
+		 packet->AddHeader (header);
+		 if ((m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
+        {
+          NS_LOG_INFO ("DHCP OFFER Sent to Client");
+          // Send data to a specified peer. 
+         // -1 in case of error or the number of bytes copied in the internal buffer and accepted for transmission. 
+        }
+      else
+        {
+          NS_LOG_INFO ("Error while sending DHCP OFFER");
+        }
 	    // header.getGiAddr() return the router interface.
 	    // broadcast forward packet to client
 	 
 	}
-	void DhcpRelay::sendAckClient(DhcpHeader header,Ipv4Address relayAddress){
+	void DhcpRelay::sendAckClient(DhcpHeader header,InetSocketAddress from){
 		// header.getGiAddr()  return the router interface
 		// broadcast this header to client  
 	}
