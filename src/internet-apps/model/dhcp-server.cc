@@ -137,7 +137,8 @@ void DhcpServer::StartApplication (void)
     {
       NS_ABORT_MSG ("DHCP daemon must be run on the same subnet it is assigning the addresses.");
     }
-//the number of Ipv4InterfaceAddresss stored on this interface 
+
+  //the number of Ipv4InterfaceAddresss stored on this interface 
   for (addrIndex = 0; addrIndex < ipv4->GetNAddresses (ifIndex); addrIndex++)
     {
       // m_poolmask that network mask
@@ -240,10 +241,12 @@ void DhcpServer::NetHandler (Ptr<Socket> socket)
     {
       return;
     }
+
   if (header.GetType () == DhcpHeader::DHCPDISCOVER)
     {
       SendOffer (iDev, header, senderAddr); // sends offer if it is of type DHCPDISCOVER
     }
+
   if (header.GetType () == DhcpHeader::DHCPREQ && (header.GetReq ()).Get () >= m_minAddress.Get () && (header.GetReq ()).Get () <= m_maxAddress.Get ())
     {
       SendAck (iDev, header, senderAddr);  // sends ack if it is of type DHCPREQUEST
@@ -300,7 +303,8 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
   if (offeredAddress != Ipv4Address ())
     {
       m_leasedAddresses[sourceChaddr] = std::make_pair (offeredAddress, m_lease.GetSeconds ());  /// entryin as new pair to the leased address
-// setting up new dhcp packet for DHCPOFFER
+      
+      // setting up new dhcp packet for DHCPOFFER
       packet = Create<Packet> ();
       newDhcpHeader.ResetOpt ();
       newDhcpHeader.SetType (DhcpHeader::DHCPOFFER); // type of DHCPDISCOVER message
@@ -315,16 +319,17 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
       newDhcpHeader.SetTran (tran);  // transaction id
       newDhcpHeader.SetLease (m_lease.GetSeconds ()); // setting up lease time
       newDhcpHeader.SetRenew (m_renew.GetSeconds ()); // setting up renew time
-      newDhcpHeader.SetRebind (m_rebind.GetSeconds ()); //
+      newDhcpHeader.SetRebind (m_rebind.GetSeconds ()); // setting up rebind time
       newDhcpHeader.SetTime ();
+
       if (m_gateway != Ipv4Address ())
         {
           newDhcpHeader.SetRouter (m_gateway);
         }
+
       packet->AddHeader (newDhcpHeader);// adding dhcp header to packet
 
       if ((m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
-        
         {
           NS_LOG_INFO ("DHCP OFFER" << " Offered Address: " << offeredAddress);
           // Send data to a specified peer. 

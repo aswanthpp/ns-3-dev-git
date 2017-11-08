@@ -50,6 +50,7 @@ namespace ns3 {
                    Ipv4AddressValue (),
                    MakeIpv4AddressAccessor (&DhcpRelay::m_dhcps),
                    MakeIpv4AddressChecker ())
+		;
 		return tid;
 	}
 
@@ -81,10 +82,6 @@ namespace ns3 {
 		m_sokcet_server->Bind (local_server);
 		m_sokcet_server->SetRecvPktInfo (true);
 		m_sokcet_server->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerServer, this));
-
-
-
-
 	}
 
 	void DhcpRelay::StopApplication ()
@@ -92,9 +89,9 @@ namespace ns3 {
 		//NS_LOG_FUNCTION (this);
 
 		if (m_socket_client != 0)
-		{
-			m_socket_client->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
-		}
+			{
+				m_socket_client->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
+			}
 
 		//m_leasedAddresses.clear ();
 		//Simulator::Remove (m_expiredEvent);
@@ -117,9 +114,9 @@ namespace ns3 {
 		Ipv4PacketInfoTag interfaceInfo;
     	/*True if the requested tag is found, false otherwise*/
 		if (!packet->RemovePacketTag (interfaceInfo))   
-		{
-			NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
-		}
+			{
+				NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
+			}
 
         /*Get the tag's receiving interface*/
 		uint32_t incomingIf = interfaceInfo.GetRecvIf ();   
@@ -129,25 +126,25 @@ namespace ns3 {
 
         /*Deserialize and remove the header from the internal buffer*/
 		if (packet->RemoveHeader (header) == 0)   
-		{
-			return;
-		}
+			{
+				return;
+			}
 
 		if (header.GetType () == DhcpHeader::DHCPDISCOVER)
-		{
-			SendDiscover(iDev,header); 
-		}
+			{
+				SendDiscover(iDev,header); 
+			}
 
 		if (header.GetType () == DhcpHeader::DHCPREQ)
-		{
-			header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ()));
-			SendReq(header,m_relayAddress);
-		}
-
+			{
+				header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ()));
+				SendReq(header,m_relayAddress);
+			}
 
 	}
 
-	void DhcpRelay::NetHandlerServer(Ptr<Socket> socket){
+	void DhcpRelay::NetHandlerServer(Ptr<Socket> socket)
+	{
 		NS_LOG_FUNCTION (this << socket);
 
 		DhcpHeader header; 
@@ -160,9 +157,9 @@ namespace ns3 {
 		Ipv4PacketInfoTag interfaceInfo;
     	/*True if the requested tag is found, false otherwise*/
 		if (!packet->RemovePacketTag (interfaceInfo))   
-		{
-			NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
-		}
+			{
+				NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
+			}
 
         /*Get the tag's receiving interface*/
 		uint32_t incomingIf = interfaceInfo.GetRecvIf ();   
@@ -172,19 +169,19 @@ namespace ns3 {
 
         /*Deserialize and remove the header from the internal buffer*/
 		if (packet->RemoveHeader (header) == 0)   
-		{
-			return;
-		} 
+			{
+				return;
+			}
+
 		if (header.GetType () == DhcpHeader::DHCPOFFER)
-		{
-			SendOffer(iDev,header);
-		}
+			{
+				SendOffer(iDev,header);
+			}
 
 		if (header.GetType () == DhcpHeader::DHCPACK || header.GetType () == DhcpHeader::DHCPNACK)
-		{
-			SendAckClient(header);
-		}
-
+			{
+				SendAckClient(header);
+			}
 
 	}
 
@@ -196,33 +193,32 @@ namespace ns3 {
 		packet->AddHeader (header);
 
 		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
-		{
-			NS_LOG_INFO ("DHCP DISCOVER send to server");
-		}
+			{
+				NS_LOG_INFO ("DHCP DISCOVER send to server");
+			}
 		else
-		{
-			NS_LOG_INFO ("Error while sending DHCP DISCOVER to server");
-		}
+			{
+				NS_LOG_INFO ("Error while sending DHCP DISCOVER to server");
+			}
 	}
 
 	void DhcpRelay::SendOffer(DhcpHeader header)
-	{		
-
+	{
 		NS_LOG_FUNCTION (this << header);
 		
 		packet = Create<Packet> ();
 		packet->AddHeader (header);
 		
 		if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
-		{
-			NS_LOG_INFO ("DHCP OFFER Sent to Client");
-	          // Send data to a specified peer. 
-	         // -1 in case of error or the number of bytes copied in the internal buffer and accepted for transmission. 
-		}
+			{
+				NS_LOG_INFO ("DHCP OFFER Sent to Client");
+		          // Send data to a specified peer. 
+		         // -1 in case of error or the number of bytes copied in the internal buffer and accepted for transmission. 
+			}
 		else
-		{
-			NS_LOG_INFO ("Error while sending DHCP OFFER");
-		}
+			{
+				NS_LOG_INFO ("Error while sending DHCP OFFER");
+			}
 	    // header.getGiAddr() return the router interface.
 	    // broadcast forward packet to client
 
@@ -241,13 +237,13 @@ namespace ns3 {
 
 		packet->AddHeader(header);
 		if(m_socket_client->SendTo (packet, 0, InetSocketAddress (m_dhcps, DHCP_PEER_PORT)) >= 0);
-		{
-			NS_LOG_INFO ("DHCP REQUEST sent from Relay agent to Client");
-		}
+			{
+				NS_LOG_INFO ("DHCP REQUEST sent from Relay agent to Client");
+			}
 		else
-		{
-			NS_LOG_INFO("Error while sending DHCPREQ to" << m_dhcps);
-		}	    
+			{
+				NS_LOG_INFO("Error while sending DHCPREQ to" << m_dhcps);
+			}	    
 	}
 
 	void DhcpRelay::SendAckClient(DhcpHeader header)
@@ -257,13 +253,13 @@ namespace ns3 {
 		packet->AddHeader (header);
 
 		if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
-		{
-			NS_LOG_INFO ("DHCP ACK send to client");
-		}
+			{
+				NS_LOG_INFO ("DHCP ACK send to client");
+			}
 		else
-		{
-			NS_LOG_INFO ("Error while sending DHCP ACK to client");
-		}
+			{
+				NS_LOG_INFO ("Error while sending DHCP ACK to client");
+			}
 	}
 
 }

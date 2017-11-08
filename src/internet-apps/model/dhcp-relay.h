@@ -55,7 +55,7 @@ namespace ns3 {
      * \param socket Socket bound to port 67 of the DHCP server
      */
     void NetHandlerClient (Ptr<Socket> socket);
-     void NetHandlerServer (Ptr<Socket> socket);
+    void NetHandlerServer (Ptr<Socket> socket);
 
      /*unicast to server from relay DHCPDISCOVER*/
     void SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header);
@@ -69,8 +69,8 @@ namespace ns3 {
     /* broadcast ack or nack to client*/
     void SendAckClient(DhcpHeader header);
 
-     Ptr<Socket> m_socket_client; // socket communicating with client
-     Ptr<Socket> m_sokcet_server;   // socket communicating with dhcp server   
+    Ptr<Socket> m_socket_client; // socket communicating with client
+    Ptr<Socket> m_sokcet_server;   // socket communicating with dhcp server   
 
     Ptr<NetDevice> m_device;
 

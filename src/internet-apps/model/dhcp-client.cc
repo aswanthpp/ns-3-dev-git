@@ -180,6 +180,7 @@ DhcpClient::StartApplication (void)
           found = true;
         }
     }
+
   if (!found)
     {
       ipv4->AddAddress (ifIndex, Ipv4InterfaceAddress (Ipv4Address ("0.0.0.0"),Ipv4Mask ("/0")));
@@ -317,15 +318,18 @@ void DhcpClient::NetHandler (Ptr<Socket> socket)
     {
       return;
     }
+
   if (m_state == WAIT_OFFER && header.GetType () == DhcpHeader::DHCPOFFER)
     {
       OfferHandler (header);
     }
+
   if (m_state == WAIT_ACK && header.GetType () == DhcpHeader::DHCPACK)
     {
       Simulator::Remove (m_nextOfferEvent);
       AcceptAck (header,from);
     }
+
   if (m_state == WAIT_ACK && header.GetType () == DhcpHeader::DHCPNACK)
     {
       Simulator::Remove (m_nextOfferEvent);
@@ -365,6 +369,7 @@ void DhcpClient::Boot (void)
       /*m_remoteAddress is initially set to 255.255.255.255 to start DHCP. */
       NS_LOG_INFO ("Error while sending DHCP DISCOVER to " << m_remoteAddress);
     }
+
   m_state = WAIT_OFFER;
   m_offered = false;
 
@@ -461,6 +466,7 @@ void DhcpClient::Request (void)
         {
           NS_LOG_INFO ("Error while sending DHCP REQ to " << m_remoteAddress);
         }
+        
       m_state = WAIT_ACK;
     }
 }
