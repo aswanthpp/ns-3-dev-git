@@ -141,13 +141,29 @@ namespace ns3 {
 		}
 	}
 
+    void DhcpRelay::SendRequest(Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from){  
+    	packet = Create<Packet> ();
+
+		packet->AddHeader (header);
+
+		if ((m_socket->SendTo (packet, 0, InetSocketAddress (m_dhcps, DHCP_PEER_PORT))) >= 0)
+		{
+			NS_LOG_INFO ("DHCP REQUEST send to server");
+		}
+		else
+		{
+			NS_LOG_INFO ("Error while sending DHCP REQUEST to server");
+		}
+    }  
+
+
 	void DhcpRelay::OfferHandler(DhcpHeader header,Ipv4Address relayAddress){
 		NS_LOG_FUNCTION (this << header);
 	    // header.getGiAddr() return the router interface.
 	    // broadcast forward packet to client
 	 
 	}
-	void DhcpRelay::sendAckClient(DhcpHeader header,Ipv4Address relayAddress){
+	void DhcpRelay::SendAckClient(DhcpHeader header,Ipv4Address relayAddress){
 		// header.getGiAddr()  return the router interface
 		// broadcast this header to client  
 	}
