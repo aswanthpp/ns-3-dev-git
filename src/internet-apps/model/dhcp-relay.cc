@@ -40,9 +40,30 @@ namespace ns3 {
 		.SetParent<Application> ()
 		.AddConstructor<DhcpRelay> ()
 		.SetGroupName ("Internet-Apps")
+		.AddAttribute ("RelayAddress",
+                   "Pool of addresses to provide on request.",
+                   Ipv4AddressValue (),
+                   MakeIpv4AddressAccessor (&DhcpRelay::m_relayAddress),
+                   MakeIpv4AddressChecker ())
+		.AddAttribute ("DhcpServerAddress",
+                   "Pool of addresses to provide on request.",
+                   Ipv4AddressValue (),
+                   MakeIpv4AddressAccessor (&DhcpRelay::m_dhcps),
+                   MakeIpv4AddressChecker ())
 			
 		return tid;
 	}
+
+	Ptr<NetDevice> DhcpClient::GetDhcpRelayNetDevice (void)
+	{
+	  return m_device;
+	}
+
+	void DhcpClient::SetDhcpRelayNetDevice (Ptr<NetDevice> netDevice)
+	{
+	  m_device = netDevice;
+	}
+
 
 	void DhcpRelay::StartApplication (void)	
 	{
