@@ -183,10 +183,10 @@ ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ip
 ApplicationContainer DhcpHelper::InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address relayAddr,
                                                      Ipv4Mask subMask, Ipv4Address dhcps)
 {
-  m_serverFactory.Set ("Subnet Mask", Ipv4MaskValue (subMask)); // similiarly above
-  m_serverFactory.Set ("DhcpServerAddress", Ipv4AddressValue (dhcps));
-  m_serverFactory.Set ("RelayAddress", Ipv4AddressValue (relayAddr));
-
+  m_relayFactory.Set ("RelayAddress", Ipv4AddressValue (relayAddr));
+  m_relayFactory.Set ("Subnet Mask", Ipv4MaskValue (subMask)); 
+  m_relayFactory.Set ("DhcpServerAddress", Ipv4AddressValue (dhcps));
+  
   Ptr<Node> node = netDevice->GetNode ();
   NS_ASSERT_MSG (node != 0, "DhcpHelper: NetDevice is not not associated with any node -> fail");
 
@@ -202,35 +202,21 @@ ApplicationContainer DhcpHelper::InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv
     }
   NS_ASSERT_MSG (interface >= 0, "DhcpHelper: Interface index not found");
 
-  Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (serverAddr, poolMask);
-  ipv4->AddAddress (interface, ipv4Addr);  // add ip address to that interface
-  ipv4->SetMetric (interface, 1);          // setting cost of that interface
-  ipv4->SetUp (interface);          // setting up the interface
+  Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (relayAddr, subMask);
+  ipv4->AddAddress (interface, ipv4Addr);  
+  ipv4->SetMetric (interface, 1);          
+  ipv4->SetUp (interface);          
 
-  // Install the default traffic control configuration if the traffic
-  // control layer has been aggregated, if this is not
-  // a loopback interface, and there is no queue disc installed already
   Ptr<TrafficControlLayer> tc = node->GetObject<TrafficControlLayer> ();
   if (tc && DynamicCast<LoopbackNetDevice> (netDevice) == 0 && tc->GetRootQueueDiscOnDevice (netDevice) == 0)
     {
       NS_LOG_LOGIC ("DhcpHelper - Installing default traffic control configuration");
       TrafficControlHelper tcHelper = TrafficControlHelper::Default ();
       tcHelper.Install (netDevice);
-    }
+    }  
 
-  // check that the already fixed addresses are not in conflict with the pool
-  std::list<Ipv4Address>::iterator iter;
-  for (iter=m_fixedAddresses.begin (); iter!=m_fixedAddresses.end (); iter ++)
-    {
-      if (iter->Get () >= minAddr.Get () && iter->Get () <= maxAddr.Get ())
-        {
-          NS_ABORT_MSG ("DhcpHelper: Fixed address can not conflict with a pool: " << *iter << " is in [" << minAddr << ",  " << maxAddr << "]");
-        }
-    }
-  m_addressPools.push_back (std::make_pair (minAddr, maxAddr));  // m_addressPools - list address pools 
-
-  Ptr<Application> app = m_serverFactory.Create<DhcpServer> ();
-  node->AddApplication (app);      // invoking the DhcpServer Application
+  Ptr<Application> app = m_relayFactory.Create<DhcpRelay> ();
+  node->AddApplication (app);      
   return ApplicationContainer (app);   
 }
 
