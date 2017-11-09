@@ -66,19 +66,21 @@ namespace ns3 {
 
 
 	void DhcpRelay::StartApplication (void)	
-	{
+	{	// m_socket_client  can only contact  dhcp server
 		TypeId tid_client = TypeId::LookupByName ("ns3::UdpSocketFactory");
 		m_socket_client = Socket::CreateSocket (GetNode (), tid_client);
-		InetSocketAddress local_client = InetSocketAddress (Ipv4Address::GetAny (), PORT_CLIENT);
+		InetSocketAddress local_client = InetSocketAddress (Ipv4Address::GetAny (), PORT_SERVER);
 		m_socket_client->SetAllowBroadcast (true);
 		//m_socket_client->BindToNetDevice (ipv4->GetNetDevice (ifIndex));
 		m_socket_client->Bind (local_client);
 		m_socket_client->SetRecvPktInfo (true);
 		m_socket_client->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerClient, this));
 
+		
+		// m_socket_server -> can only contact dhcp client
 		TypeId tid_server = TypeId::LookupByName ("ns3::UdpSocketFactory");
 		m_sokcet_server = Socket::CreateSocket (GetNode (), tid_server);
-		InetSocketAddress local_server = InetSocketAddress (m_relayAddress, PORT_SERVER);
+		InetSocketAddress local_server = InetSocketAddress (m_relayAddress, PORT_CLIENT);
 		m_sokcet_server->Bind (local_server);
 		m_sokcet_server->SetRecvPktInfo (true);
 		m_sokcet_server->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerServer, this));
@@ -92,6 +94,10 @@ namespace ns3 {
 			{
 				m_socket_client->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
 			}
+		if (m_socket_client != 0)
+		{
+			m_sokcet_server->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
+		}
 
 		//m_leasedAddresses.clear ();
 		//Simulator::Remove (m_expiredEvent);
@@ -137,7 +143,7 @@ namespace ns3 {
 
 		if (header.GetType () == DhcpHeader::DHCPREQ)
 			{
-				header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ()));
+				
 				SendReq(header,m_relayAddress);
 			}
 
@@ -192,7 +198,7 @@ namespace ns3 {
 
 		packet->AddHeader (header);
 
-		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
+		if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
 			{
 				NS_LOG_INFO ("DHCP DISCOVER send to server");
 			}
@@ -209,7 +215,7 @@ namespace ns3 {
 		packet = Create<Packet> ();
 		packet->AddHeader (header);
 		
-		if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
+		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
 			{
 				NS_LOG_INFO ("DHCP OFFER Sent to Client");
 		          // Send data to a specified peer. 
