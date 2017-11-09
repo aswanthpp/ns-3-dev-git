@@ -68,7 +68,7 @@ int main (int argc, char *argv[])
   are used to refer to the nodes*/
   NodeContainer nodes;
   NodeContainer router;
-
+  
   /*Create 3 nodes and append pointers to them to the end of this NodeContainer, i.e.,nodes*/
   nodes.Create (3);
   router.Create (2);
@@ -162,6 +162,7 @@ int main (int argc, char *argv[])
   DhcpHelper dhcpHelper;
 
   // The router must have a fixed IP.
+  /*Ipv4InterfaceContainer - holds a vector of std::pair of Ptr<Ipv4> and interface index*/
   Ipv4InterfaceContainer fixedNodes = dhcpHelper.InstallFixedAddress (devNet.Get (4), 
                                                                       Ipv4Address ("172.30.0.17"), 
                                                                       Ipv4Mask ("/24"));
@@ -170,14 +171,20 @@ int main (int argc, char *argv[])
   fixedNodes.Get (0).first->SetAttribute ("IpForward", BooleanValue (true));
 
   // DHCP server
+  /*ApplicationContainer - holds a vector of ns3::Application pointers
+  InstallDhcpServer(netDevice, serverAddr, poolAddr, poolMask, minAddr, maxAddr, gateway)*/
   ApplicationContainer dhcpServerApp = dhcpHelper.InstallDhcpServer (devNet.Get (3), Ipv4Address ("172.30.0.12"),
                                                                      Ipv4Address ("172.30.0.0"), Ipv4Mask ("/24"),
-                                                                     Ipv4Address ("172.30.0.10"), Ipv4Address ("172.30.0.15"),
+                                                                     Ipv4Address ("172.30.0.10"), 
+                                                                     Ipv4Address ("172.30.0.15"),
                                                                      Ipv4Address ("172.30.0.17"));
 
   // This is just to show how it can be done.
-  DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), Ipv4Address ("172.30.0.14"));
+  DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), 
+                           Ipv4Address ("172.30.0.14"));
 
+  /*Start - This method simply iterates through the contained Applications and calls their Start() 
+  methods with the provided Time*/
   dhcpServerApp.Start (Seconds (0.0));
   dhcpServerApp.Stop (stopTime);
 
@@ -191,12 +198,18 @@ int main (int argc, char *argv[])
   dhcpClients.Start (Seconds (1.0));
   dhcpClients.Stop (stopTime);
 
+  /*UdpEchoServerHelper(port) - Create a server application which waits for input UDP packets and sends them 
+  back to the original sender; port- the port the server will wait on for incoming packets*/
   UdpEchoServerHelper echoServer (9);
 
   ApplicationContainer serverApps = echoServer.Install (p2pNodes.Get (1));
   serverApps.Start (Seconds (0.0));
   serverApps.Stop (stopTime);
 
+  /*UdpEchoClientHelper(ip, port) - Create an application which sends a UDP packet and waits for an echo of 
+  this packet. 
+  ip - The IP address of the remote udp echo server 
+  port - The port number of the remote udp echo server */
   UdpEchoClientHelper echoClient (p2pInterfaces.GetAddress (1), 9);
   echoClient.SetAttribute ("MaxPackets", UintegerValue (100));
   echoClient.SetAttribute ("Interval", TimeValue (Seconds (1.0)));

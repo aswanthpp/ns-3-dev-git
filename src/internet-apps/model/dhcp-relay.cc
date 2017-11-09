@@ -50,6 +50,11 @@ namespace ns3 {
                    Ipv4AddressValue (),
                    MakeIpv4AddressAccessor (&DhcpRelay::m_dhcps),
                    MakeIpv4AddressChecker ())
+		.AddAttribute ("Subnet Mask",
+                   " ",
+                   Ipv4AddressValue (),
+                   MakeIpv4AddressAccessor (&DhcpRelay::m_subMask),
+                   MakeIpv4AddressChecker ())
 		;
 		return tid;
 	}
