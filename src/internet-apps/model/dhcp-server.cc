@@ -55,17 +55,17 @@ DhcpServer::GetTypeId (void)
     .AddAttribute ("LeaseTime",
                    "Lease for which address will be leased.",
                    TimeValue (Seconds (30)),
-                   MakeTimeAccessor (&DhcpServer::m_lease),  /// after this time the addressed removed from leasedAddress pool
-                   MakeTimeChecker ())
+                   MakeTimeAccessor (&DhcpServer::m_lease),   /// after this time, the address is removed from 
+                   MakeTimeChecker ())                        /// m_leasedAddresses
     .AddAttribute ("RenewTime",
-                   "Time after which client should renew.",      /// client unicast server to get same ip
+                   "Time after which client should renew.",      
                    TimeValue (Seconds (15)),
-                   MakeTimeAccessor (&DhcpServer::m_renew),
+                   MakeTimeAccessor (&DhcpServer::m_renew),   /// client unicast server to get the same ip  
                    MakeTimeChecker ())
     .AddAttribute ("RebindTime",
                    "Time after which client should rebind.",
-                   TimeValue (Seconds (25)),                    /// after this time client should broadcast
-                   MakeTimeAccessor (&DhcpServer::m_rebind),
+                   TimeValue (Seconds (25)),                    
+                   MakeTimeAccessor (&DhcpServer::m_rebind),  /// after this time, client sends broadcast
                    MakeTimeChecker ())
     .AddAttribute ("PoolAddresses",
                    "Pool of addresses to provide on request.",
@@ -117,11 +117,13 @@ void DhcpServer::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
 
-  NS_ASSERT_MSG (m_minAddress < m_maxAddress,"Invalid Address range");   // min and max address available in address pool
+  // min and max address available in address pool
+  NS_ASSERT_MSG (m_minAddress < m_maxAddress,"Invalid Address range");   
 
   Ipv4Address myOwnAddress;
 
-  if (m_socket)   // socket bound to port 67
+  // The socket bound to port 67
+  if (m_socket)   
     {
       NS_ABORT_MSG ("DHCP daemon is not (yet) meant to be started twice or more.");
     }
@@ -129,29 +131,35 @@ void DhcpServer::StartApplication (void)
   uint32_t addrIndex;
 
   //add the DHCP local address to the leased addresses list, if it is defined!
-  Ptr<Ipv4> ipv4 = GetNode ()->GetObject<Ipv4> ();   /// pointer of object
-  int32_t ifIndex = ipv4->GetInterfaceForPrefix (m_poolAddress, m_poolMask);   // m_poolAddress = network address availabe to the server
-  /// iifIndex has interface number of first interface found that has an Ipv4 address within the prefix specified by the input address and mask parameters. 
+  /*GetNode () - Returns the Node to which this Application object is attached*/
+  Ptr<Ipv4> ipv4 = GetNode ()->GetObject<Ipv4> ();   
+
+  /*GetInterfaceForPrefix(address, mask) - Returns the interface number of first interface found that has an Ipv4 
+  address within the prefix specified by the input address and mask parameters*/
+  int32_t ifIndex = ipv4->GetInterfaceForPrefix (m_poolAddress, m_poolMask);   
 
   if (ifIndex < 0)
     {
       NS_ABORT_MSG ("DHCP daemon must be run on the same subnet it is assigning the addresses.");
     }
 
-  //the number of Ipv4InterfaceAddresss stored on this interface 
+  //GetNAddresses(interface) - Returns the number of Ipv4InterfaceAddress entries for the interface
   for (addrIndex = 0; addrIndex < ipv4->GetNAddresses (ifIndex); addrIndex++)
     {
-      // m_poolmask that network mask
+      
+      /*CombineMask(mask) - This method returns an IPv4 address that is this address combined (bitwise and) with 
+      a network mask, yielding an IPv4 network address*/
       if (ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().CombineMask (m_poolMask) == m_poolAddress &&
           ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().Get () >= m_minAddress.Get () &&
           ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().Get () <= m_maxAddress.Get ())
         {
           // set infinite GRANTED_LEASED_TIME for my address
-
           myOwnAddress = ipv4->GetAddress (ifIndex, addrIndex).GetLocal ();
-          m_leasedAddresses[Address ()] = std::make_pair (myOwnAddress, 0xffffffff); /// server address is inserted into m_leasedAddresses .can't be allocated again
-          break;                                                      /// largest 32 bit number 2^32-1
-                                                                      /// time for which is allocated 
+
+          /*m_leasedAddresses - Leased address and their status (cache memory) 
+          0xffffffff - largest 32 bit number, 2^32-1*/
+          m_leasedAddresses[Address ()] = std::make_pair (myOwnAddress, 0xffffffff); 
+          break; 
         }
     }
 

@@ -77,11 +77,11 @@ namespace ns3 {
 		m_socket_client->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerClient, this));
 
 		TypeId tid_server = TypeId::LookupByName ("ns3::UdpSocketFactory");
-		m_sokcet_server = Socket::CreateSocket (GetNode (), tid_server);
-		InetSocketAddress local_server = InetSocketAddress (m_relayAddress, PORT_SERVER);
-		m_sokcet_server->Bind (local_server);
-		m_sokcet_server->SetRecvPktInfo (true);
-		m_sokcet_server->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerServer, this));
+		m_socket_server = Socket::CreateSocket (GetNode (), tid_server);
+		InetSocketAddress local_server = InetSocketAddress (Ipv4Address::GetAny (), PORT_SERVER);
+		m_socket_server->Bind (local_server);
+		m_socket_server->SetRecvPktInfo (true);
+		m_socket_server->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerServer, this));
 	}
 
 	void DhcpRelay::StopApplication ()
