@@ -25,6 +25,7 @@
 #include "dhcp-helper.h"
 #include "ns3/dhcp-server.h"
 #include "ns3/dhcp-client.h"
+#include "ns3/dhcp-relay.h"
 #include "ns3/uinteger.h"
 #include "ns3/names.h"
 #include "ns3/ipv4.h"
