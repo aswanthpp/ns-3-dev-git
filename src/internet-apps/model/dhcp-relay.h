@@ -76,6 +76,7 @@ namespace ns3 {
 
     Ipv4Address m_relayAddress;            /// !<Address assigned to the relay>!
     Ipv4Address m_dhcps;
+ //   Ptr<Ipv4InterfaceAddress> m_networks;  /// state info about the subnets in the network
 
 };
 

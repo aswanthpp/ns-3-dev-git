@@ -195,6 +195,7 @@ namespace ns3 {
 	{
 		Ptr<Packet> packet = Create<Packet> ();
 		header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ())); 
+		header.SetMask(24);  //  assumed that every subnetworks has /24 poolMask
 
 		packet->AddHeader (header);
 
