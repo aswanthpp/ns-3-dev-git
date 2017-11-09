@@ -180,7 +180,7 @@ ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ip
 
 // relay acting as a client
 
-ApplicationContainer DhcpHelper::InstallDhcpRelayClient (Ptr<NetDevice> netDevice, Ipv4Address clientAddress,Ipv4Address dhcpServer)
+ApplicationContainer DhcpHelper::InstallDhcpRelayClient (Ptr<NetDevice> netDevice, Ipv4Address relayAddress,Ipv4Address dhcpServer)
 {
    m_relayFactory.Set ("RelayAddress", Ipv4AddressValue (relayAddress));  // assign the value to the variable PoolAddresses in Get TypeId
  

@@ -273,6 +273,9 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
 
   NS_LOG_INFO ("DHCP DISCOVER from: " << from.GetIpv4 () << " source port: " <<  from.GetPort ());
 
+  uint32_t mask=header.GetMask();         // getting mask from header packet
+  Ipv4Address giAddr=header.GetGiaddr(); // getting gateway address from header packet
+
   LeasedAddressIter iter = m_leasedAddresses.find (sourceChaddr);
   if (iter != m_leasedAddresses.end ()) // if it is not there it will return iter end value controle goes to else part
     {
@@ -286,7 +289,7 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
       offeredAddress = m_leasedAddresses[sourceChaddr].first;
 
     }
-  else
+  else 
     {
       // No previous record of the client, we must find a suitable address and create a record.
       if (!m_availableAddresses.empty ())
@@ -329,6 +332,9 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
       newDhcpHeader.SetRenew (m_renew.GetSeconds ()); // setting up renew time
       newDhcpHeader.SetRebind (m_rebind.GetSeconds ()); // setting up rebind time
       newDhcpHeader.SetTime ();
+
+      newDhcpHeader.SetGiaddr(giAddr);   // injecting the gateway and mask to the new header packet
+      newDhcpHeader.SetMask(mask);    
 
       if (m_gateway != Ipv4Address ())
         {

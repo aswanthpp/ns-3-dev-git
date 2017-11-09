@@ -48,8 +48,8 @@ namespace ns3 {
       virtual void DoDispose (void);
 
     private:
-    static const int PORT_CLIENT = 67;                       //!< Port number of DHCP client
-    static const int PORT_SERVER = 68;                       //!< Port number of DHCP server
+    static const int PORT_CLIENT = 68;                     // relay acting as client
+    static const int PORT_SERVER = 67;                       // relay acting as server
     /**
      * \brief Handles incoming packets from the network
      * \param socket Socket bound to port 67 of the DHCP server
@@ -76,6 +76,7 @@ namespace ns3 {
 
     Ipv4Address m_relayAddress;            /// !<Address assigned to the relay>!
     Ipv4Address m_dhcps;
+ //   Ptr<Ipv4InterfaceAddress> m_networks;  /// state info about the subnets in the network
 
 };
 
