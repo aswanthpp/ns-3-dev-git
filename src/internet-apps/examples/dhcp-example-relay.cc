@@ -38,13 +38,13 @@ NS_LOG_COMPONENT_DEFINE ("DhcpExample");
 
 int main (int argc, char *argv[])
 {
-  CommandLine cmd;
-
   bool verbose = false;
   bool tracing = false;
+  Time stopTime = Seconds (20);
+
+  CommandLine cmd;
   cmd.AddValue ("verbose", "turn on the logs", verbose);
   cmd.AddValue ("tracing", "turn on the tracing", tracing);
-
   /*Parse the program arguments*/
   cmd.Parse (argc, argv);
 
@@ -58,10 +58,7 @@ int main (int argc, char *argv[])
       LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
     }
 
-  Time stopTime = Seconds (20);
-
   NS_LOG_INFO ("Create nodes.");
-
   /*NodeContainer - Keeps track of a set of node pointers. Typically ns-3 helpers operate on more than one node at 
   a time. For example, a device helper may want to install devices on a large number of similar nodes. The helper 
   Install methods usually take a NodeContainer as a parameter. NodeContainers hold the multiple Ptr<Node> which 
@@ -132,16 +129,16 @@ int main (int argc, char *argv[])
   /*ApplicationContainer - holds a vector of ns3::Application pointers
   InstallDhcpServer(netDevice, serverAddr, poolAddr, poolMask, minAddr, maxAddr, gateway)*/
   ApplicationContainer dhcpServerApp = dhcpHelper.InstallDhcpServer (p2pDevices.Get (1), Ipv4Address ("172.30.1.12"),
-                                                                     Ipv4Address ("172.30.0.0"), Ipv4Mask ("/24"),
-                                                                     Ipv4Address ("172.30.0.10"), 
-                                                                     Ipv4Address ("172.30.0.15"));
+                                                                     Ipv4Address ("172.30.1.0"), Ipv4Mask ("/24"),
+                                                                     Ipv4Address ("172.30.1.10"), 
+                                                                     Ipv4Address ("172.30.1.15"));
 
   ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.11"),
                                                                   Ipv4Mask ("/24"), Ipv4Address ("172.30.1.12"));
 
   // This is just to show how it can be done.
   DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), 
-                           Ipv4Address ("172.30.0.14"));
+                           Ipv4Address ("172.30.1.14"));
 
   /*Start - This method simply iterates through the contained Applications and calls their Start() 
   methods with the provided Time*/

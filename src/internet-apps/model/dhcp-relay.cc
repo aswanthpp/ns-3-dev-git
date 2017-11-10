@@ -87,7 +87,9 @@ DhcpRelay::DoDispose (void)
 
 
 	void DhcpRelay::StartApplication (void)	
-	{	// m_socket_client  can only contact  dhcp server
+	{
+		NS_LOG_FUNCTION (this);
+		// m_socket_client  can only contact  dhcp server
 		TypeId tid_client = TypeId::LookupByName ("ns3::UdpSocketFactory");
 		m_socket_client = Socket::CreateSocket (GetNode (), tid_client);
 		InetSocketAddress local_client = InetSocketAddress (Ipv4Address::GetAny (), PORT_SERVER);
@@ -109,7 +111,7 @@ DhcpRelay::DoDispose (void)
 
 	void DhcpRelay::StopApplication ()
 	{
-		//NS_LOG_FUNCTION (this);
+		NS_LOG_FUNCTION (this);
 
 		if (m_socket_client != 0)
 			{
@@ -274,6 +276,7 @@ DhcpRelay::DoDispose (void)
 
 	void DhcpRelay::SendAckClient(DhcpHeader header)
 	{
+				NS_LOG_FUNCTION (this);
 		Ptr<Packet> packet = Create<Packet> ();
 
 		packet->AddHeader (header);

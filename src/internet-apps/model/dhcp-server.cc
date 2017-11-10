@@ -222,6 +222,7 @@ void DhcpServer::TimerHandler ()
             }
         }
     }
+
   m_expiredEvent = Simulator::Schedule (Seconds (1), &DhcpServer::TimerHandler, this);  // recursivley calling itself to check th expired addresses
 } 
 
