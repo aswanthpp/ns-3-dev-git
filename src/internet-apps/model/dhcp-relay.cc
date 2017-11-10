@@ -41,30 +41,46 @@ namespace ns3 {
 		.AddConstructor<DhcpRelay> ()
 		.SetGroupName ("Internet-Apps")
 		.AddAttribute ("RelayAddress",
-                   "Pool of addresses to provide on request.",
+                   "relay address",
                    Ipv4AddressValue (),
                    MakeIpv4AddressAccessor (&DhcpRelay::m_relayAddress),
                    MakeIpv4AddressChecker ())
 		.AddAttribute ("DhcpServerAddress",
-                   "Pool of addresses to provide on request.",
+                   "dhcpServer Address",
                    Ipv4AddressValue (),
                    MakeIpv4AddressAccessor (&DhcpRelay::m_dhcps),
                    MakeIpv4AddressChecker ())
-		.AddAttribute ("Subnet Mask",
-                   " ",
-                   Ipv4AddressValue (),
-                   MakeIpv4AddressAccessor (&DhcpRelay::m_subMask),
-                   MakeIpv4AddressChecker ())
+		.AddAttribute ("SubnetMask",
+                   "Mask of the subnet",
+                   Ipv4MaskValue (),
+                   MakeIpv4MaskAccessor (&DhcpRelay::m_subMask),
+                   MakeIpv4MaskChecker ())
 		;
 		return tid;
 	}
 
-	Ptr<NetDevice> DhcpClient::GetDhcpRelayNetDevice (void)
+DhcpRelay::DhcpRelay ()
+{
+  NS_LOG_FUNCTION (this);
+}
+
+DhcpRelay::~DhcpRelay ()
+{
+  NS_LOG_FUNCTION (this);
+}
+void
+DhcpRelay::DoDispose (void)
+{
+  NS_LOG_FUNCTION (this);
+  Application::DoDispose ();
+}
+
+	Ptr<NetDevice> DhcpRelay::GetDhcpRelayNetDevice (void)
 	{
 	  return m_device;
 	}
 
-	void DhcpClient::SetDhcpRelayNetDevice (Ptr<NetDevice> netDevice)
+	void DhcpRelay::SetDhcpRelayNetDevice (Ptr<NetDevice> netDevice)
 	{
 	  m_device = netDevice;
 	}
@@ -120,7 +136,7 @@ namespace ns3 {
 		packet = m_socket_client->RecvFrom (from);  
 
         /*Returns corresponding inetsocket address of argument*/
-		InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  
+		//InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  
 
 		Ipv4PacketInfoTag interfaceInfo;
     	/*True if the requested tag is found, false otherwise*/
@@ -149,7 +165,7 @@ namespace ns3 {
 		if (header.GetType () == DhcpHeader::DHCPREQ)
 			{
 				
-				SendReq(header,m_relayAddress);
+				SendReq(header);
 			}
 
 	}
@@ -164,7 +180,7 @@ namespace ns3 {
 
 		/*Read a single packet from the socket and retrieve the sender address*/
 		packet = m_socket_client->RecvFrom (from); 
-		InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  
+		//InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  
 		Ipv4PacketInfoTag interfaceInfo;
     	/*True if the requested tag is found, false otherwise*/
 		if (!packet->RemovePacketTag (interfaceInfo))   
@@ -186,7 +202,7 @@ namespace ns3 {
 
 		if (header.GetType () == DhcpHeader::DHCPOFFER)
 			{
-				SendOffer(iDev,header);
+				SendOffer(header);
 			}
 
 		if (header.GetType () == DhcpHeader::DHCPACK || header.GetType () == DhcpHeader::DHCPNACK)
@@ -199,8 +215,8 @@ namespace ns3 {
 	void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev,DhcpHeader header)
 	{
 		Ptr<Packet> packet = Create<Packet> ();
-		header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ())); 
-		header.SetMask(24);  //  assumed that every subnetworks has /24 poolMask
+		//header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ())); 
+		//header.SetMask(24);  //  assumed that every subnetworks has /24 poolMask
 
 		packet->AddHeader (header);
 
@@ -217,11 +233,11 @@ namespace ns3 {
 	void DhcpRelay::SendOffer(DhcpHeader header)
 	{
 		NS_LOG_FUNCTION (this << header);
-		
+		Ptr<Packet> packet ;
 		packet = Create<Packet> ();
 		packet->AddHeader (header);
 		
-		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
+		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
 			{
 				NS_LOG_INFO ("DHCP OFFER Sent to Client");
 		          // Send data to a specified peer. 
@@ -243,12 +259,10 @@ namespace ns3 {
 		// broadcast this header to client 
 
 		NS_LOG_FUNCTION (this);
-
-		DhcpHeader header;
 		Ptr<Packet> packet;
 
 		packet->AddHeader(header);
-		if(m_socket_client->SendTo (packet, 0, InetSocketAddress (m_dhcps, DHCP_PEER_PORT)) >= 0);
+		if(m_socket_client->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER)) >= 0)
 			{
 				NS_LOG_INFO ("DHCP REQUEST sent from Relay agent to Client");
 			}

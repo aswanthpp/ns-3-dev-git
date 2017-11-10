@@ -22,7 +22,7 @@ namespace ns3 {
         /*Set DHCP server attributes*/
 		void SetServerAttribute (std::string name, const AttributeValue &value);
 
-        void SetRelayAttribute (std::string name,const AttributeValue &value)
+        void SetRelayAttribute (std::string name,const AttributeValue &value);
 
         /*Install DHCP client of a node / NetDevice
         netDevice : The NetDevice that the DHCP client will use
@@ -51,7 +51,8 @@ namespace ns3 {
 			Ipv4Address gateway = Ipv4Address ());
 
 
-        ApplicationContainer InstallDhcpRelayClient (Ptr<NetDevice> netDevice, Ipv4Address clientAddress,Ipv4Address dhcpServer);
+        ApplicationContainer InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address relayAddr,
+                                                     Ipv4Mask subMask, Ipv4Address dhcps);
         /*Assign a fixed IP addresses to a net device.
         netDevice : The NetDevice on which the address has to be installed
         addr : The Ipv4Address
@@ -68,7 +69,8 @@ namespace ns3 {
         /*ObjectFactory : Instantiate subclasses of ns3::Object. This class can also hold a set of attributes to 
         set automatically during the object construction*/
 		ObjectFactory m_clientFactory;                 
-		ObjectFactory m_serverFactory;                 
+		ObjectFactory m_serverFactory;
+        ObjectFactory m_relayFactory;                 
 
         /*list of fixed addresses already allocated*/
 		std::list<Ipv4Address> m_fixedAddresses;  

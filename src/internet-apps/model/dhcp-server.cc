@@ -142,7 +142,6 @@ void DhcpServer::StartApplication (void)
     {
       NS_ABORT_MSG ("DHCP daemon must be run on the same subnet it is assigning the addresses.");
     }
-
   //GetNAddresses(interface) - Returns the number of Ipv4InterfaceAddress entries for the interface
   for (addrIndex = 0; addrIndex < ipv4->GetNAddresses (ifIndex); addrIndex++)
     {

@@ -280,6 +280,11 @@ public:
    */
   uint32_t GetRebind (void) const;
 
+
+
+  void SetGiaddr(Ipv4Address giaddr);
+  Ipv4Address GetGiaddr();
+
   /**
    * \brief Reset the BOOTP options
    */

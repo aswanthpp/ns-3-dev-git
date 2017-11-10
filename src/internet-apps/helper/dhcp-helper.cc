@@ -185,7 +185,7 @@ ApplicationContainer DhcpHelper::InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv
                                                      Ipv4Mask subMask, Ipv4Address dhcps)
 {
   m_relayFactory.Set ("RelayAddress", Ipv4AddressValue (relayAddr));
-  m_relayFactory.Set ("Subnet Mask", Ipv4MaskValue (subMask)); 
+  m_relayFactory.Set ("SubnetMask", Ipv4MaskValue (subMask)); 
   m_relayFactory.Set ("DhcpServerAddress", Ipv4AddressValue (dhcps));
   
   Ptr<Node> node = netDevice->GetNode ();
