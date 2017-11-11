@@ -70,7 +70,8 @@ protected:
   virtual void DoDispose (void);
 
 private:
-  static const int PORT = 67;                       //!< Port number of DHCP server
+  static const int PORT = 67;  
+  static const int PORT_68 = 68;                 
 
   /**
    * \brief Handles incoming packets from the network

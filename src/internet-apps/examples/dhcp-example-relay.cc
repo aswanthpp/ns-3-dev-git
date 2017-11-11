@@ -34,7 +34,7 @@
 using namespace ns3;
 
 /*Define a Log component with the name DhcpExample*/
-NS_LOG_COMPONENT_DEFINE ("DhcpExample");
+NS_LOG_COMPONENT_DEFINE ("DhcpExampleRelay");
 
 int main (int argc, char *argv[])
 {
@@ -54,8 +54,9 @@ int main (int argc, char *argv[])
     {
       LogComponentEnable ("DhcpServer", LOG_LEVEL_ALL);
       LogComponentEnable ("DhcpClient", LOG_LEVEL_ALL);
-      LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
-      LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
+      LogComponentEnable ("DhcpRelay", LOG_LEVEL_ALL);
+      LogComponentEnable ("DhcpExampleRelay", LOG_LEVEL_ALL);
+
     }
 
   NS_LOG_INFO ("Create nodes.");
@@ -119,12 +120,13 @@ int main (int argc, char *argv[])
   /*DhcpHelper - The helper class used to configure and install DHCP applications on nodes*/
   DhcpHelper dhcpHelper;
 
-  // The router must have a fixed IP.
   /*Ipv4InterfaceContainer - holds a vector of std::pair of Ptr<Ipv4> and interface index*/
   Ipv4InterfaceContainer relayClient = dhcpHelper.InstallFixedAddress (devNet.Get (3), 
                                                                       Ipv4Address ("172.30.0.17"), 
-                                                                      Ipv4Mask ("/24"));                                                                                  
+                                                                      Ipv4Mask ("/24"));   
 
+  //NS_LOG_INFO("-----relayClient : "<<relayClient.Get (0).first<<"----------");
+  
   // DHCP server
   /*ApplicationContainer - holds a vector of ns3::Application pointers
   InstallDhcpServer(netDevice, serverAddr, poolAddr, poolMask, minAddr, maxAddr, gateway)*/
@@ -133,7 +135,8 @@ int main (int argc, char *argv[])
                                                                      Ipv4Address ("172.30.1.10"), 
                                                                      Ipv4Address ("172.30.1.15"));
 
-  ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.11"),
+  /*InstallDhcpRelay (netDevice, relayAddr,subMask, dhcps)*/
+  ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.16"),
                                                                   Ipv4Mask ("/24"), Ipv4Address ("172.30.1.12"));
 
   // This is just to show how it can be done.
@@ -144,6 +147,9 @@ int main (int argc, char *argv[])
   methods with the provided Time*/
   dhcpServerApp.Start (Seconds (0.0));
   dhcpServerApp.Stop (stopTime);
+
+  dhcpRelayApp.Start (Seconds (0.0));
+  dhcpRelayApp.Stop (stopTime);
 
   // DHCP clients
   NetDeviceContainer dhcpClientNetDevs;
