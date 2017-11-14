@@ -97,7 +97,7 @@ DhcpRelay::DoDispose (void)
 		//m_socket_client->BindToNetDevice (ipv4->GetNetDevice (ifIndex));
 		m_socket_client->Bind (local_client);
 		m_socket_client->SetRecvPktInfo (true);
-		m_socket_client->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerClient, this));
+		m_socket_client->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerServer, this));
        
 
 		// m_socket_server -> can only contact dhcp client
@@ -108,7 +108,7 @@ DhcpRelay::DoDispose (void)
 
 		m_socket_server->Bind (local_server);
 		m_socket_server->SetRecvPktInfo (true);
-		m_socket_server->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerServer, this));
+		m_socket_server->SetRecvCallback (MakeCallback (&DhcpRelay::NetHandlerClient, this));
 	}
 
 	void DhcpRelay::StopApplication ()
@@ -128,32 +128,33 @@ DhcpRelay::DoDispose (void)
 		//Simulator::Remove (m_expiredEvent);
 	}
 
-	void DhcpRelay::NetHandlerClient (Ptr<Socket> socket)
+	void DhcpRelay::NetHandlerServer (Ptr<Socket> socket)
 	{
 		NS_LOG_FUNCTION (this << socket);
-
+// NS_LOG_INFO("-----------------------------------------------");
 		DhcpHeader header; 
 		Ptr<Packet> packet = 0;
 		Address from;
-
+//  NS_LOG_INFO("----------111111111111111-------------------------------------");
 		/*Read a single packet from the socket and retrieve the sender address*/
 		packet = m_socket_client->RecvFrom (from);  
 
         /*Returns corresponding inetsocket address of argument*/
 		//InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  
-
+// NS_LOG_INFO("------------------222222222222222222----------------------------");
 		Ipv4PacketInfoTag interfaceInfo;
     	/*True if the requested tag is found, false otherwise*/
 		if (!packet->RemovePacketTag (interfaceInfo))   
 			{
 				NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
 			}
-
+ //NS_LOG_INFO("----------3333333333333333333333-------------------------------------");
         /*Get the tag's receiving interface*/
 		uint32_t incomingIf = interfaceInfo.GetRecvIf ();   
 
   		/*Pointer to the incoming interface*/
-		Ptr<NetDevice> iDev = GetNode ()->GetDevice (incomingIf);   
+		Ptr<NetDevice> iDev = GetNode ()->GetDevice (incomingIf); 
+		//  NS_LOG_INFO("-------------444444444444444444444----------------------------------");  
 
         /*Deserialize and remove the header from the internal buffer*/
 		if (packet->RemoveHeader (header) == 0)   
@@ -171,10 +172,11 @@ DhcpRelay::DoDispose (void)
 				
 				SendReq(header);
 			}
+		//	  NS_LOG_INFO("------------endendend-----------------------------------");
 
 	}
 
-	void DhcpRelay::NetHandlerServer(Ptr<Socket> socket)
+	void DhcpRelay::NetHandlerClient(Ptr<Socket> socket)
 	{
 		NS_LOG_FUNCTION (this << socket);
         //NS_LOG_INFO("-----------------------------------------------");
@@ -182,10 +184,10 @@ DhcpRelay::DoDispose (void)
 		Ptr<Packet> packet = 0;
 		Address from;
 
-        //NS_LOG_INFO("----------111111111111111-------------------------------------");
+       // NS_LOG_INFO("----------111111111111111-------------------------------------");
  
 		/*Read a single packet from the socket and retrieve the sender address*/
-		packet = m_socket_client->RecvFrom (from); 
+		packet = m_socket_server->RecvFrom (from); 
 
         //NS_LOG_INFO("------------------222222222222222222----------------------------");
 
@@ -196,16 +198,16 @@ DhcpRelay::DoDispose (void)
 			{
 				NS_ABORT_MSG ("No incoming interface on DHCP message, aborting.");
 			}
-        //NS_LOG_INFO("----------3333333333333333333333-------------------------------------");
+      //  NS_LOG_INFO("----------3333333333333333333333-------------------------------------");
 
         /*Get the tag's receiving interface*/
 		uint32_t incomingIf = interfaceInfo.GetRecvIf ();   
-        //NS_LOG_INFO("-------------444444444444444444444----------------------------------");
+       // NS_LOG_INFO("-------------444444444444444444444----------------------------------");
 
   		/*Pointer to the incoming interface*/
 		Ptr<NetDevice> iDev = GetNode ()->GetDevice (incomingIf); 
 
-        //NS_LOG_INFO("---------------------555555555555555555555--------------------------");
+     //   NS_LOG_INFO("---------------------555555555555555555555--------------------------");
 
 
         /*Deserialize and remove the header from the internal buffer*/
@@ -223,19 +225,23 @@ DhcpRelay::DoDispose (void)
 			{
 				SendAckClient(header);
 			}
-        //NS_LOG_INFO("------------endendend-----------------------------------");
+       // NS_LOG_INFO("------------endendend-----------------------------------");
 
 
 	}
 
 	void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev,DhcpHeader header)
 	{
+		NS_LOG_FUNCTION (this<<header);
+		// NS_LOG_INFO("-----------------------------------------------");
 		Ptr<Packet> packet = 0;
 		packet = Create<Packet> ();
 		//header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ())); 
 		header.SetMask(24);  //  assumed that every subnetworks has /24 poolMask
+		// NS_LOG_INFO("-------------------------111111111----------------------");
 
 		packet->AddHeader (header);
+		 //NS_LOG_INFO("-----------------22222222222------------------------------");
 
 		if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
 			{
@@ -245,6 +251,7 @@ DhcpRelay::DoDispose (void)
 			{
 				NS_LOG_INFO ("Error while sending DHCP DISCOVER to server");
 			}
+			 NS_LOG_INFO("----------------endendend-------------------------------");
 	}
 
 	void DhcpRelay::SendOffer(DhcpHeader header)
@@ -274,7 +281,7 @@ DhcpRelay::DoDispose (void)
 
 	void DhcpRelay::SendReq(DhcpHeader header)
 	{		
-
+		NS_LOG_FUNCTION (this << header);
 		// header.getGiAddr()  return the router interface
 		// broadcast this header to client 
 
@@ -286,7 +293,7 @@ DhcpRelay::DoDispose (void)
 
 		packet->AddHeader(header);
 
-		if(m_socket_client->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER)) >= 0)
+		if(m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER)) >= 0)
 			{
 				NS_LOG_INFO ("DHCP REQUEST sent from Relay agent to Client");
 			}
@@ -298,7 +305,7 @@ DhcpRelay::DoDispose (void)
 
 	void DhcpRelay::SendAckClient(DhcpHeader header)
 	{
-		NS_LOG_FUNCTION (this);
+		NS_LOG_FUNCTION (this<<header);
 		Ptr<Packet> packet = 0;
 		packet = Create<Packet> ();
 
@@ -306,7 +313,7 @@ DhcpRelay::DoDispose (void)
 
 		packet->AddHeader (header);
 
-		if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
+		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
 			{
 				NS_LOG_INFO ("DHCP ACK send to client");
 			}
