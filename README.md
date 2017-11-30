@@ -9,6 +9,7 @@ The Dynamic Host Configuration Protocol (DHCP) provides configuration parameters
 Using BOOTP relay agents eliminates the necessity of having a DHCP server on each physical network segment. A BOOTP relay agent or relay agent is an Internet host or router that passes DHCP messages between DHCP clients and DHCP servers. DHCP is designed to use the same relay agent behavior as specified in the BOOTP protocol specification.
 
 We have implemented the DHCP relay feature in ns-3 using the topology as shown :
+![dhcp_relay](https://user-images.githubusercontent.com/19391965/33448915-479db6a4-d62d-11e7-99c4-72b53c617fec.png)
 
 
 ### References:
