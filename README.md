@@ -13,6 +13,24 @@ Using BOOTP relay agents eliminates the necessity of having a DHCP server on eac
 
 ![image](https://user-images.githubusercontent.com/19391965/33449818-ed16ec8e-d62f-11e7-936d-e8d46f9f97b9.png)
 
+### To run the code
+
+Clone the repository to your local machine.
+
+`git clone https://github.com/aswanthpp/dhcp_relay_in_ns3.git`
+
+Then build ns-3.
+
+`./waf configure`
+
+An example program for DHCP Relay has been provided in :
+
+`src/internet-apps/examples/dhcp-example-relay.cc`
+
+Once ns-3 has been built, we can run the example file as :
+
+`./waf --run "src/internet-apps/examples/dhcp-example-relay --verbose=true"`
+
 ### References
 
 
