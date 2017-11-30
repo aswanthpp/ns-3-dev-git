@@ -11,7 +11,7 @@ Using BOOTP relay agents eliminates the necessity of having a DHCP server on eac
 We have implemented the DHCP relay feature in ns-3 using the topology as shown :
 
 
-![image](https://user-images.githubusercontent.com/19391965/33449366-90a94a38-d62e-11e7-856f-003d39c41f61.png)
+![image](https://user-images.githubusercontent.com/19391965/33449818-ed16ec8e-d62f-11e7-936d-e8d46f9f97b9.png)
 
 
 ### References:
