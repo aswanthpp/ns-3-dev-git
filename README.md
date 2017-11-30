@@ -4,8 +4,12 @@
 
 ### Overview
 
-RFC 2131 defines the basic DHCP. While DHCPv4 has been implemented in ns-3, it
-does​ ​ not​ ​ support​ ​ DHCP​ ​ Relay​ ​ functionality.
+The Dynamic Host Configuration Protocol (DHCP) provides configuration parameters to Internet hosts. DHCP consists of two components: a protocol for delivering host-specific configuration parameters from a DHCP server to a host and a mechanism for allocation of network addresses to hosts. However, it is not feasible to have a server on each subnet.
+
+Using BOOTP relay agents eliminates the necessity of having a DHCP server on each physical network segment. A BOOTP relay agent or relay agent is an Internet host or router that passes DHCP messages between DHCP clients and DHCP servers. DHCP is designed to use the same relay agent behavior as specified in the BOOTP protocol specification.
+
+We have implemented the DHCP relay feature in ns-3 using the topology as shown :
+
 
 ### References:
 
