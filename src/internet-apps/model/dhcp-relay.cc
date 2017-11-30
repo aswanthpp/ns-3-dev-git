@@ -273,25 +273,35 @@ DhcpRelay::DoDispose (void)
 		NS_LOG_FUNCTION (this << header);
 		Ptr<Packet> packet = 0;
 		packet = Create<Packet> ();
-		/*DhcpHeader newDhcpHeader;
+		DhcpHeader newDhcpHeader;
+
 		uint32_t tran=header.GetTran();
 		Address sourceChaddr = header.GetChaddr ();
 		uint32_t mask=header.GetMask();
 		Ipv4Address offeredAddress=header.GetYiaddr();
 		Ipv4Address dhcpServerAddress=header.GetDhcps();
-*/
-		//newDhcpHeader.ResetOpt ();
-		//newDhcpHeader.SetType (DhcpHeader::DHCPOFFER);
-		//newDhcpHeader.SetTran (tran);
-  		//newDhcpHeader.SetChaddr (sourceChaddr);
-  		//newDhcpHeader.SetTime ();
-  		//newDhcpHeader.SetMask(mask);
+		uint32_t lease=header.GetLease();
+		uint32_t renew=header.GetRenew();
+		uint32_t rebind=header.GetRebind();
+		Ipv4Address giaddress=header.GetGiaddr();
 
 
-		//header.SetMask(24);
+		newDhcpHeader.ResetOpt ();
+		newDhcpHeader.SetType (DhcpHeader::DHCPOFFER);
+		newDhcpHeader.SetTran (tran);
+  		newDhcpHeader.SetChaddr (sourceChaddr);
+  		newDhcpHeader.SetMask(mask);
+  		newDhcpHeader.SetYiaddr(offeredAddress);
+  		newDhcpHeader.SetDhcps(dhcpServerAddress);
+  		newDhcpHeader.SetLease(lease);
+  		newDhcpHeader.SetRenew(renew);
+  		newDhcpHeader.SetRebind(rebind);
+  		newDhcpHeader.SetGiaddr(giaddress);
+  		newDhcpHeader.SetTime ();
+  		
 
-		//packet->AddHeader (newDhcpHeader);
-		packet->AddHeader (header);
+		packet->AddHeader (newDhcpHeader);
+		//packet->AddHeader (header);
 		
 		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
 			{
@@ -318,9 +328,24 @@ DhcpRelay::DoDispose (void)
 		Ptr<Packet> packet = 0;
 		packet = Create<Packet> ();
 
-		header.SetMask(24);
+		uint32_t tran=header.GetTran();
+		Ipv4Address offeredAddress=header.GetReq();
+		Address sourceChaddr = header.GetChaddr ();
 
-		packet->AddHeader(header);
+		DhcpHeader newDhcpHeader;
+
+		newDhcpHeader.ResetOpt ();
+		newDhcpHeader.SetType (DhcpHeader::DHCPREQ);
+        newDhcpHeader.SetTime ();
+        newDhcpHeader.SetTran (tran);
+        newDhcpHeader.SetReq (offeredAddress);
+        newDhcpHeader.SetChaddr (sourceChaddr);
+         packet->AddHeader (newDhcpHeader);
+
+
+		// header.SetMask(24);
+
+		// packet->AddHeader(header);
 
 		if(m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER)) >= 0)
 			{
@@ -337,10 +362,23 @@ DhcpRelay::DoDispose (void)
 		NS_LOG_FUNCTION (this<<header);
 		Ptr<Packet> packet = 0;
 		packet = Create<Packet> ();
+		Address sourceChaddr = header.GetChaddr ();
+  		uint32_t tran = header.GetTran ();
+  		Ipv4Address address = header.GetReq ();
+  		uint32_t type=header.GetType();
 
-		header.SetMask(24);
 
-		packet->AddHeader (header);
+		DhcpHeader newDhcpHeader;
+		newDhcpHeader.ResetOpt();
+		newDhcpHeader.SetType(type);
+		newDhcpHeader.SetYiaddr(address);
+		newDhcpHeader.SetChaddr(sourceChaddr);
+		newDhcpHeader.SetTran(tran);
+		newDhcpHeader.SetTime();
+		packet->AddHeader(newDhcpHeader);
+
+
+
 
 		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
 			{

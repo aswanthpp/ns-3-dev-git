@@ -388,6 +388,7 @@ void DhcpServer::SendAck (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddr
       packet->AddHeader (newDhcpHeader);
       if (from.GetIpv4 () != address)
         {
+         // m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()));
           m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("172.30.1.16"), from.GetPort ()));
         }
       else
@@ -408,6 +409,7 @@ void DhcpServer::SendAck (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddr
       packet->AddHeader (newDhcpHeader);
       if (from.GetIpv4 () != address)
         {
+          //m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()));
           m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("172.30.1.16"), from.GetPort ()));
         }
       else
