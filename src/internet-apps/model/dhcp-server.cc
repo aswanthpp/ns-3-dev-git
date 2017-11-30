@@ -252,6 +252,7 @@ void DhcpServer::NetHandler (Ptr<Socket> socket)
 
   if (header.GetType () == DhcpHeader::DHCPDISCOVER)
     {
+    
       SendOffer (iDev, header, senderAddr); // sends offer if it is of type DHCPDISCOVER
     }
 
@@ -263,6 +264,7 @@ void DhcpServer::NetHandler (Ptr<Socket> socket)
 
 void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from)
 {
+  
   NS_LOG_FUNCTION (this << iDev << header << from);
 
   DhcpHeader newDhcpHeader;

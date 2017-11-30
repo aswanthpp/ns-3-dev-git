@@ -52,10 +52,11 @@ int main (int argc, char *argv[])
 
   if (verbose)
     {
-     // LogComponentEnable ("DhcpServer", LOG_LEVEL_ALL);
-      //LogComponentEnable ("DhcpClient", LOG_LEVEL_ALL);
-      LogComponentEnable ("DhcpRelay", LOG_LEVEL_ALL);
-     // LogComponentEnable ("DhcpExampleRelay", LOG_LEVEL_ALL);
+      LogComponentEnable ("DhcpServer", LOG_LEVEL_ALL);
+      LogComponentEnable ("DhcpClient", LOG_LEVEL_ALL);
+     //LogComponentEnable ("DhcpRelay", LOG_LEVEL_ALL);
+      //LogComponentEnable ("DhcpExampleRelay", LOG_LEVEL_ALL);
+      //LogComponentEnable ("DhcpHelper", LOG_LEVEL_ALL);
 
     }
 

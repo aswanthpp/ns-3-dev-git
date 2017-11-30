@@ -318,10 +318,15 @@ void DhcpClient::NetHandler (Ptr<Socket> socket)
     {
       return;
     }
+   // NS_LOG_INFO("-----------before offerhandler-------------------");
+
 
   if (m_state == WAIT_OFFER && header.GetType () == DhcpHeader::DHCPOFFER)
     {
+  //    NS_LOG_INFO("-----------inside--------------");
       OfferHandler (header);
+    //  NS_LOG_INFO("-----------inside----Afer offer--------------");
+
     }
 
   if (m_state == WAIT_ACK && header.GetType () == DhcpHeader::DHCPACK)
@@ -382,6 +387,7 @@ void DhcpClient::Boot (void)
 void DhcpClient::OfferHandler (DhcpHeader header)
 {
   NS_LOG_FUNCTION (this << header);
+  NS_LOG_INFO("--------------------------");
 
   m_offerList.push_back (header);
   if (m_offered == false)

@@ -184,7 +184,7 @@ DhcpRelay::DoDispose (void)
 		Ptr<Packet> packet = 0;
 		Address from;
 
-       // NS_LOG_INFO("----------111111111111111-------------------------------------");
+        //NS_LOG_INFO("----------111111111111111-------------------------------------");
  
 		/*Read a single packet from the socket and retrieve the sender address*/
 		packet = m_socket_server->RecvFrom (from); 
@@ -236,11 +236,25 @@ DhcpRelay::DoDispose (void)
 		// NS_LOG_INFO("-----------------------------------------------");
 		Ptr<Packet> packet = 0;
 		packet = Create<Packet> ();
-		//header.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ())); 
-		header.SetMask(24);  //  assumed that every subnetworks has /24 poolMask
-		// NS_LOG_INFO("-------------------------111111111----------------------");
+		DhcpHeader newDhcpHeader;
+		uint32_t tran=header.GetTran();
+		Address sourceChaddr = header.GetChaddr ();
+		uint32_t mask=header.GetMask();
+		//Ipv4Address giAddr=header.GetGiaddr(); 
 
-		packet->AddHeader (header);
+		newDhcpHeader.ResetOpt ();
+		newDhcpHeader.SetType (DhcpHeader::DHCPDISCOVER);
+		newDhcpHeader.SetTran (tran);
+  		newDhcpHeader.SetChaddr (sourceChaddr);
+  		newDhcpHeader.SetTime ();
+  		newDhcpHeader.SetGiaddr("172.30.0.17"); /// need to add programmitically
+  		
+  		//packet->AddHeader (newHeader);
+		//newDhcpHeader.SetGiaddr(DynamicCast<Ipv4>(iDev.GetAddress ())); 
+		newDhcpHeader.SetMask(mask);  //  assumed that every subnetworks has /24 poolMask
+		// NS_LOG_INFO("-------------------------111111111----------------------");
+		packet->AddHeader (newDhcpHeader);
+		//packet->AddHeader (header);
 		 //NS_LOG_INFO("-----------------22222222222------------------------------");
 
 		if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
@@ -251,7 +265,7 @@ DhcpRelay::DoDispose (void)
 			{
 				NS_LOG_INFO ("Error while sending DHCP DISCOVER to server");
 			}
-			 NS_LOG_INFO("----------------endendend-------------------------------");
+			// NS_LOG_INFO("----------------endendend-------------------------------");
 	}
 
 	void DhcpRelay::SendOffer(DhcpHeader header)
@@ -259,9 +273,24 @@ DhcpRelay::DoDispose (void)
 		NS_LOG_FUNCTION (this << header);
 		Ptr<Packet> packet = 0;
 		packet = Create<Packet> ();
+		/*DhcpHeader newDhcpHeader;
+		uint32_t tran=header.GetTran();
+		Address sourceChaddr = header.GetChaddr ();
+		uint32_t mask=header.GetMask();
+		Ipv4Address offeredAddress=header.GetYiaddr();
+		Ipv4Address dhcpServerAddress=header.GetDhcps();
+*/
+		//newDhcpHeader.ResetOpt ();
+		//newDhcpHeader.SetType (DhcpHeader::DHCPOFFER);
+		//newDhcpHeader.SetTran (tran);
+  		//newDhcpHeader.SetChaddr (sourceChaddr);
+  		//newDhcpHeader.SetTime ();
+  		//newDhcpHeader.SetMask(mask);
 
-		header.SetMask(24);
 
+		//header.SetMask(24);
+
+		//packet->AddHeader (newDhcpHeader);
 		packet->AddHeader (header);
 		
 		if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
@@ -295,7 +324,7 @@ DhcpRelay::DoDispose (void)
 
 		if(m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER)) >= 0)
 			{
-				NS_LOG_INFO ("DHCP REQUEST sent from Relay agent to Client");
+				NS_LOG_INFO ("DHCP REQUEST sent from Relay agent to Server");
 			}
 		else
 			{
