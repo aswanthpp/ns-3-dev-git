@@ -108,8 +108,8 @@ public:
    * \param dhcps 
    * \return The application container with DHCP relay installed
    */
-  ApplicationContainer InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address relayAddr,
-                                         Ipv4Mask subMask, Ipv4Address dhcps);
+  ApplicationContainer InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address serverSideAddress,
+                                         Ipv4Mask subMask, Ipv4Address dhcps, Ipv4Address clientSideAddress);
 
   /**
    * \brief Assign a fixed IP addresses to a net device.

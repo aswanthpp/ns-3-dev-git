@@ -35,13 +35,18 @@ DhcpRelay::GetTypeId (void)
 		.SetParent<Application> ()
 		.AddConstructor<DhcpRelay> ()
 		.SetGroupName ("Internet-Apps")
-		.AddAttribute ("RelayAddress",
-                   "relay address",
+		.AddAttribute ("ServerSideAddress",
+                   "Relay address at the server side",
                    Ipv4AddressValue (),
-                   MakeIpv4AddressAccessor (&DhcpRelay::m_relayAddress),
+                   MakeIpv4AddressAccessor (&DhcpRelay::m_relayServerSideAddress),
+                   MakeIpv4AddressChecker ())
+		.AddAttribute ("ClientSideAddress",
+                   "Relay address at the client side",
+                   Ipv4AddressValue (),
+                   MakeIpv4AddressAccessor (&DhcpRelay::m_relayClientSideAddress),
                    MakeIpv4AddressChecker ())
 		.AddAttribute ("DhcpServerAddress",
-                   "dhcpServer Address",
+                   "Address of DHCP server",
                    Ipv4AddressValue (),
                    MakeIpv4AddressAccessor (&DhcpRelay::m_dhcps),
                    MakeIpv4AddressChecker ())
@@ -95,7 +100,7 @@ void DhcpRelay::StartApplication (void)
     
 	TypeId tid_server = TypeId::LookupByName ("ns3::UdpSocketFactory");
 	m_socket_server = Socket::CreateSocket (GetNode (), tid_server);
-	InetSocketAddress local_server = InetSocketAddress (m_relayAddress, PORT_CLIENT);
+	InetSocketAddress local_server = InetSocketAddress (m_relayServerSideAddress, PORT_CLIENT);
 	m_socket_server->SetAllowBroadcast (true);
 	m_socket_server->Bind (local_server);
 	m_socket_server->SetRecvPktInfo (true);
@@ -142,11 +147,11 @@ void DhcpRelay::NetHandlerServer (Ptr<Socket> socket)
 		}
 	if (header.GetType () == DhcpHeader::DHCPDISCOVER)
 		{
-			SendDiscover(iDev,header); 
+			SendDiscover (iDev,header); 
 		}
 	if (header.GetType () == DhcpHeader::DHCPREQ)
 		{
-			SendReq(header);
+			SendReq (header);
 		}
 }
 
@@ -173,11 +178,11 @@ void DhcpRelay::NetHandlerClient(Ptr<Socket> socket)
 		}
 	if (header.GetType () == DhcpHeader::DHCPOFFER)
 		{
-			SendOffer(header);
+			SendOffer (header);
 		}
 	if (header.GetType () == DhcpHeader::DHCPACK || header.GetType () == DhcpHeader::DHCPNACK)
 		{
-			SendAckClient(header);
+			SendAckClient (header);
 		}
 }
 
@@ -197,17 +202,17 @@ void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev,DhcpHeader header)
 	newDhcpHeader.SetTran (tran);
 	newDhcpHeader.SetChaddr (sourceChaddr);
 	newDhcpHeader.SetTime ();
-	newDhcpHeader.SetGiaddr("172.30.0.17"); /// need to add programmitically
-	newDhcpHeader.SetMask(mask);  //  assumed that every subnetworks has /24 poolMask
+	newDhcpHeader.SetGiaddr (m_relayClientSideAddress); 
+	newDhcpHeader.SetMask (mask);    //  assumed that every subnetwork has /24 poolMask
 	packet->AddHeader (newDhcpHeader);
 
 	if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
 		{
-			NS_LOG_INFO ("DHCP DISCOVER send to server");
+			NS_LOG_INFO ("DHCP DISCOVER send from relay to server");
 		}
 	else
 		{
-			NS_LOG_INFO ("Error while sending DHCP DISCOVER to server");
+			NS_LOG_INFO ("Error while sending DHCP DISCOVER from relay to server");
 		}
 }
 
@@ -219,38 +224,38 @@ void DhcpRelay::SendOffer(DhcpHeader header)
 	packet = Create<Packet> ();
 	DhcpHeader newDhcpHeader;
 
-	uint32_t tran=header.GetTran();
+	uint32_t tran=header.GetTran ();
 	Address sourceChaddr = header.GetChaddr ();
-	uint32_t mask=header.GetMask();
-	Ipv4Address offeredAddress=header.GetYiaddr();
-	Ipv4Address dhcpServerAddress=header.GetDhcps();
-	uint32_t lease=header.GetLease();
-	uint32_t renew=header.GetRenew();
-	uint32_t rebind=header.GetRebind();
-	Ipv4Address giaddress=header.GetGiaddr();
+	uint32_t mask=header.GetMask ();
+	Ipv4Address offeredAddress = header.GetYiaddr ();
+	Ipv4Address dhcpServerAddress = header.GetDhcps ();
+	uint32_t lease = header.GetLease ();
+	uint32_t renew = header.GetRenew ();
+	uint32_t rebind = header.GetRebind ();
+	Ipv4Address giaddress = header.GetGiaddr ();
 
 	newDhcpHeader.ResetOpt ();
 	newDhcpHeader.SetType (DhcpHeader::DHCPOFFER);
 	newDhcpHeader.SetTran (tran);
  	newDhcpHeader.SetChaddr (sourceChaddr);
- 	newDhcpHeader.SetMask(mask);
- 	newDhcpHeader.SetYiaddr(offeredAddress);
- 	newDhcpHeader.SetDhcps(dhcpServerAddress);
- 	newDhcpHeader.SetLease(lease);
- 	newDhcpHeader.SetRenew(renew);
- 	newDhcpHeader.SetRebind(rebind);
- 	newDhcpHeader.SetGiaddr(giaddress);
+ 	newDhcpHeader.SetMask (mask);
+ 	newDhcpHeader.SetYiaddr (offeredAddress);
+ 	newDhcpHeader.SetDhcps (dhcpServerAddress);
+ 	newDhcpHeader.SetLease (lease);
+ 	newDhcpHeader.SetRenew (renew);
+ 	newDhcpHeader.SetRebind (rebind);
+ 	newDhcpHeader.SetGiaddr (giaddress);
 	newDhcpHeader.SetTime ();
   		
 	packet->AddHeader (newDhcpHeader);
 		
 	if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
 		{
-			NS_LOG_INFO ("DHCP OFFER Sent to Client");
+			NS_LOG_INFO ("DHCP OFFER sent from relay to client");
 		}
 	else
 		{
-			NS_LOG_INFO ("Error while sending DHCP OFFER");
+			NS_LOG_INFO ("Error while sending DHCP OFFER from relay to client");
 		}
 }
 
@@ -262,8 +267,8 @@ void DhcpRelay::SendReq(DhcpHeader header)
 	Ptr<Packet> packet = 0;
 	packet = Create<Packet> ();
 
-	uint32_t tran = header.GetTran();
-	Ipv4Address offeredAddress=header.GetReq();
+	uint32_t tran = header.GetTran ();
+	Ipv4Address offeredAddress = header.GetReq ();
 	Address sourceChaddr = header.GetChaddr ();
 
 	DhcpHeader newDhcpHeader;
@@ -278,11 +283,11 @@ void DhcpRelay::SendReq(DhcpHeader header)
 
 	if(m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER)) >= 0)
 		{
-			NS_LOG_INFO ("DHCP REQUEST sent from Relay agent to Server");
+			NS_LOG_INFO ("DHCP REQUEST sent from relay to server");
 		}
 	else
 		{
-			NS_LOG_INFO("Error while sending DHCPREQ to" << m_dhcps);
+			NS_LOG_INFO ("Error while sending DHCP REQUEST from relay to server");
 		}	    
 }
 
@@ -299,20 +304,20 @@ void DhcpRelay::SendAckClient(DhcpHeader header)
 
 	DhcpHeader newDhcpHeader;
 	newDhcpHeader.ResetOpt();
-	newDhcpHeader.SetType(type);
-	newDhcpHeader.SetYiaddr(address);
-	newDhcpHeader.SetChaddr(sourceChaddr);
-	newDhcpHeader.SetTran(tran);
-	newDhcpHeader.SetTime();
+	newDhcpHeader.SetType (type);
+	newDhcpHeader.SetYiaddr (address);
+	newDhcpHeader.SetChaddr (sourceChaddr);
+	newDhcpHeader.SetTran (tran);
+	newDhcpHeader.SetTime ();
 	packet->AddHeader(newDhcpHeader);
 
 	if ((m_socket_client->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), PORT_CLIENT))) >= 0)
 		{
-			NS_LOG_INFO ("DHCP ACK send to client");
+			NS_LOG_INFO ("DHCP ACK send from relay to client");
 		}
 	else
 		{
-			NS_LOG_INFO ("Error while sending DHCP ACK to client");
+			NS_LOG_INFO ("Error while sending DHCP ACK from relay to client");
 		}
 }
 
