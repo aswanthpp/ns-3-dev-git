@@ -106,7 +106,7 @@ private:
   virtual void StartApplication (void);
 
   /**
-   * \brief Stops the DHCP client application
+   * \brief Stops the DHCP Server application
    */
   virtual void StopApplication (void);
 

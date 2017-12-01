@@ -17,76 +17,109 @@
 
 namespace ns3 {
 
-    class Socket;
-    class Packet;
+class Socket;
+class Packet;
 
-    /**
-     * \ingroup dhcp
-     *
-     * \class DhcpRelay
-     * \brief Implements the functionality of a DHCP server
-    */
-    class DhcpRelay : public Application
-    {
-    public:
-    /**
-     * \brief Get the type ID.
-     * \return the object TypeId
-     */
-      static TypeId GetTypeId (void);
+/**
+ * \ingroup dhcp
+ *
+ * \class DhcpRelay
+ * \brief Implements the functionality of a DHCP server
+*/
+class DhcpRelay : public Application
+{
+public:
+	/**
+	 * \brief Get the type ID.
+	 * \return the object TypeId
+	 */
+  static TypeId GetTypeId (void);
 
-      DhcpRelay ();
-      virtual ~DhcpRelay ();
+  DhcpRelay ();
+  virtual ~DhcpRelay ();
 
-      Ptr<NetDevice> GetDhcpRelayNetDevice (void);
-      void SetDhcpRelayNetDevice (Ptr<NetDevice> netDevice); 
+  /**
+   * \brief Get the the NetDevice DHCP should work on
+   * \return the NetDevice DHCP should work on
+   */
+  Ptr<NetDevice> GetDhcpRelayNetDevice (void);
+  
+	/**
+   * \brief Set the NetDevice DHCP should work on
+   * \param netDevice the NetDevice DHCP should work on
+   */
+  void SetDhcpRelayNetDevice (Ptr<NetDevice> netDevice); 
 
-      void StartApplication (void);   
-      void StopApplication (void);
-      
-    /*Get the IPv4Address of current DHCP server*/
-      Ipv4Address GetDhcpServer (void);
+  /**
+   * \brief Starts the DHCP Relay application
+   */
+  void StartApplication (void);
 
-    protected:
-      virtual void DoDispose (void);
+  /**
+   * \brief Stops the DHCP Server application
+   */   
+  void StopApplication (void);
+	  
+	/**
+   * \brief Get the IPv4Address of current DHCP server
+   * \return Ipv4Address of current DHCP server
+   */
+  Ipv4Address GetDhcpServer (void);
 
-    private:
-    static const int PORT_CLIENT = 68;                     // relay acting as client
-    static const int PORT_SERVER = 67;                       // relay acting as server
-    /**
-     * \brief Handles incoming packets from the network
-     * \param socket Socket bound to port 67 of the DHCP server
-     */
-    void NetHandlerClient (Ptr<Socket> socket);
-    void NetHandlerServer (Ptr<Socket> socket);
+	protected:
+	  virtual void DoDispose (void);
 
-     /*unicast to server from relay DHCPDISCOVER*/
-    void SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header);
+	private:
+		static const int PORT_CLIENT = 68;                 //!< relay acting as client
+		static const int PORT_SERVER = 67;                 //!< relay acting as server
+	
+	/**
+	 * \brief Handles incoming packets from the network
+	 * \param socket Socket bound to port 67 of the DHCP server
+	 */
+	void NetHandlerClient (Ptr<Socket> socket);
 
-    /* unicast to server from relay DHCPREQUEST*/
-    void SendReq(DhcpHeader header);
+	/**
+	 * \brief Handles incoming packets from the network
+	 * \param socket Socket bound to port 68 of the DHCP client
+	 */
+	void NetHandlerServer (Ptr<Socket> socket);
 
-    /*broadcast offers to client */
-    void SendOffer(DhcpHeader header);
+	/**
+   * \brief Sends DHCP DISCOVER to server as a unicast message
+   * \param iDev incoming NetDevice
+   * \param header DHCP header of the received message
+   */
+	void SendDiscover(Ptr<NetDevice> iDev, DhcpHeader header);
 
-    /* broadcast ack or nack to client*/
-    void SendAckClient(DhcpHeader header);
+	/**
+   * \brief Sends DHCP REQUEST to server as a unicast message
+   * \param header DHCP header of the received message
+   */
+	void SendReq(DhcpHeader header);
 
-    Ptr<Socket> m_socket_client; // socket communicating with client
-    Ptr<Socket> m_socket_server;   // socket communicating with dhcp server   
+	/**
+   * \brief Sends DHCP offer coming from server to client 
+   * \param header DHCP header of the received message
+   */
+	void SendOffer(DhcpHeader header);
 
-    Ptr<NetDevice> m_device;
+	/**
+   * \brief Sends DHCP ACK coming from server to client after receiving Request
+   * \param header DHCP header of the received message
+   */
+	void SendAckClient(DhcpHeader header);
 
-    Ipv4Address m_relayAddress;            /// !<Address assigned to the relay>!
-    Ipv4Address m_dhcps;
-    Ipv4Mask m_subMask;  
-
- //   Ptr<Ipv4InterfaceAddress> m_networks;  /// state info about the subnets in the network
-
+	Ptr<Socket> m_socket_client; 					//!< socket bound to port 67
+	Ptr<Socket> m_socket_server;    			//!< socket bound to port 68   
+	Ptr<NetDevice> m_device;							//!< NetDevice pointer
+	Ipv4Address m_relayAddress;           //!< Address assigned to the relay>!
+	Ipv4Address m_dhcps;									//!< Address of the DHCP server
+	Ipv4Mask m_subMask;  									//!< Mask of the Subnet
 };
 
-} 
+} // namespace ns3
 
-#endif 
+#endif /* DHCP_RELAY_H */
 
 
