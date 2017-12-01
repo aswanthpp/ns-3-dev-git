@@ -29,10 +29,11 @@ class Packet;
 class DhcpRelay : public Application
 {
 public:
-	/**
-	 * \brief Get the type ID.
-	 * \return the object TypeId
-	 */
+
+  /**
+   * \brief Get the type ID.
+   * \return the object TypeId
+   */
   static TypeId GetTypeId (void);
 
   DhcpRelay ();
@@ -44,7 +45,7 @@ public:
    */
   Ptr<NetDevice> GetDhcpRelayNetDevice (void);
   
-	/**
+  /**
    * \brief Set the NetDevice DHCP should work on
    * \param netDevice the NetDevice DHCP should work on
    */
@@ -56,11 +57,11 @@ public:
   void StartApplication (void);
 
   /**
-   * \brief Stops the DHCP Server application
+   * \brief Stops the DHCP Relay application
    */   
   void StopApplication (void);
 	  
-	/**
+  /**
    * \brief Get the IPv4Address of current DHCP server
    * \return Ipv4Address of current DHCP server
    */
@@ -110,12 +111,12 @@ public:
    */
 	void SendAckClient(DhcpHeader header);
 
-	Ptr<Socket> m_socket_client; 					//!< socket bound to port 67
+	Ptr<Socket> m_socket_client; 				//!< socket bound to port 67
 	Ptr<Socket> m_socket_server;    			//!< socket bound to port 68   
-	Ptr<NetDevice> m_device;							//!< NetDevice pointer
-	Ipv4Address m_relayAddress;           //!< Address assigned to the relay>!
-	Ipv4Address m_dhcps;									//!< Address of the DHCP server
-	Ipv4Mask m_subMask;  									//!< Mask of the Subnet
+	Ptr<NetDevice> m_device;					//!< NetDevice pointer
+	Ipv4Address m_relayAddress;                 //!< Address assigned to the relay
+	Ipv4Address m_dhcps;						//!< Address of the DHCP server
+	Ipv4Mask m_subMask;  						//!< Mask of the Subnet
 };
 
 } // namespace ns3

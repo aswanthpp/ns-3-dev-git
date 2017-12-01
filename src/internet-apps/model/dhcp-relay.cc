@@ -188,9 +188,9 @@ void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev,DhcpHeader header)
 	Ptr<Packet> packet = 0;
 	packet = Create<Packet> ();
 	DhcpHeader newDhcpHeader;
-	uint32_t tran=header.GetTran();
+	uint32_t tran = header.GetTran();
 	Address sourceChaddr = header.GetChaddr ();
-	uint32_t mask=header.GetMask();
+	uint32_t mask = header.GetMask();
 
 	newDhcpHeader.ResetOpt ();
 	newDhcpHeader.SetType (DhcpHeader::DHCPDISCOVER);
@@ -270,11 +270,11 @@ void DhcpRelay::SendReq(DhcpHeader header)
 
 	newDhcpHeader.ResetOpt ();
 	newDhcpHeader.SetType (DhcpHeader::DHCPREQ);
-  newDhcpHeader.SetTime ();
-  newDhcpHeader.SetTran (tran);
-  newDhcpHeader.SetReq (offeredAddress);
-  newDhcpHeader.SetChaddr (sourceChaddr);
-  packet->AddHeader (newDhcpHeader);
+    newDhcpHeader.SetTime ();
+    newDhcpHeader.SetTran (tran);
+    newDhcpHeader.SetReq (offeredAddress);
+    newDhcpHeader.SetChaddr (sourceChaddr);
+    packet->AddHeader (newDhcpHeader);
 
 	if(m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER)) >= 0)
 		{

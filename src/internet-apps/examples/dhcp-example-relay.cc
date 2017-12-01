@@ -1,27 +1,3 @@
-/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-/*
- * Copyright (c) 2011 UPB
- * Copyright (c) 2017 NITK Surathkal
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Author: Radu Lupu <rlupu@elcom.pub.ro>
- *         Ankit Deepak <adadeepak8@gmail.com>
- *         Deepti Rajagopal <deeptir96@gmail.com>
- *
- */
-
 #include <fstream>
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
@@ -54,7 +30,7 @@ main (int argc, char *argv[])
 		{
 			LogComponentEnable ("DhcpServer", LOG_LEVEL_ALL);
 			LogComponentEnable ("DhcpClient", LOG_LEVEL_ALL);
-		  //LogComponentEnable ("DhcpRelay", LOG_LEVEL_ALL);
+		    LogComponentEnable ("DhcpRelay", LOG_LEVEL_ALL);
 		}
 
 	NS_LOG_INFO ("Create nodes.");
@@ -91,19 +67,16 @@ main (int argc, char *argv[])
 	NS_LOG_INFO ("Setup the IP addresses and create DHCP applications.");
 	DhcpHelper dhcpHelper;
 
-	Ipv4InterfaceContainer relayClient = dhcpHelper.InstallFixedAddress (devNet.Get (3), 
-																																			Ipv4Address ("172.30.0.17"), 
-																																			Ipv4Mask ("/24"));   
+	Ipv4InterfaceContainer relayClient = dhcpHelper.InstallFixedAddress (devNet.Get (3), Ipv4Address ("172.30.0.17"), Ipv4Mask ("/24"));   
 
 	// DHCP server
 	ApplicationContainer dhcpServerApp = dhcpHelper.InstallDhcpServer (p2pDevices.Get (1), Ipv4Address ("172.30.1.12"),
-																																		 Ipv4Address ("172.30.1.0"), Ipv4Mask ("/24"),
-																																		 Ipv4Address ("172.30.1.10"), 
-																																		 Ipv4Address ("172.30.1.15"));
+		                                                               Ipv4Address ("172.30.1.0"), Ipv4Mask ("/24"),
+		                                                               Ipv4Address ("172.30.1.10"), Ipv4Address ("172.30.1.15"));
 
 	//DHCP Relay Agent
-	ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.16"),
-																																	Ipv4Mask ("/24"), Ipv4Address ("172.30.1.12"));
+	ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.16"),Ipv4Mask ("/24"), 
+		                                                             Ipv4Address ("172.30.1.12"));
 
 	// This is just to show how it can be done.
 	DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), Ipv4Address ("172.30.1.14"));
