@@ -52,10 +52,10 @@ public:
    * \brief Get the type ID.
    * \return the object TypeId
    */
-  static TypeId GetTypeId (void);   // assign type as ns3::DhcpServer
+  static TypeId GetTypeId (void);   
 
-  DhcpServer ();     /// initialise all variables 
-  virtual ~DhcpServer ();  // d
+  DhcpServer ();     
+  virtual ~DhcpServer ();  
 
   /**
    * \brief Add a static entry to the pool.
@@ -70,7 +70,7 @@ protected:
   virtual void DoDispose (void);
 
 private:
-  static const int PORT = 67;  
+  static const int PORT = 67;                       //!< Port number of DHCP server  
   static const int PORT_68 = 68;                 
 
   /**

@@ -39,9 +39,7 @@ int
 main (int argc, char *argv[])
 {
   CommandLine cmd;
-  //NS_LOG_INFO("----------------------------------------------------------------------------------------------");
-
-
+  
   bool verbose = false;
   bool tracing = false;
   cmd.AddValue ("verbose", "turn on the logs", verbose);

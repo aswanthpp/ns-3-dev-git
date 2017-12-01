@@ -40,16 +40,16 @@ NS_LOG_COMPONENT_DEFINE ("DhcpHelper");
 
 DhcpHelper::DhcpHelper ()
 {
-  m_clientFactory.SetTypeId (DhcpClient::GetTypeId ());  // assigning dhcp_client type to m_clientFactory
-  m_serverFactory.SetTypeId (DhcpServer::GetTypeId ()); // assigning dhcp_server type to m_serverFatory
-  m_relayFactory.SetTypeId (DhcpRelay::GetTypeId ());   // assiging dhcp_relay type to m_relayFactory
+  m_clientFactory.SetTypeId (DhcpClient::GetTypeId ());  
+  m_serverFactory.SetTypeId (DhcpServer::GetTypeId ()); 
+  m_relayFactory.SetTypeId (DhcpRelay::GetTypeId ());   
 }
 
 void DhcpHelper::SetClientAttribute (
   std::string name,
   const AttributeValue &value)
 {
-  m_clientFactory.Set (name, value);      // adding attribute  to the client
+  m_clientFactory.Set (name, value);       
 }
 
 void DhcpHelper::SetServerAttribute (
@@ -74,7 +74,7 @@ ApplicationContainer DhcpHelper::InstallDhcpClient (Ptr<NetDevice> netDevice) co
 ApplicationContainer DhcpHelper::InstallDhcpClient (NetDeviceContainer netDevices) const
 {
   ApplicationContainer apps;
-  for (NetDeviceContainer::Iterator i = netDevices.Begin (); i != netDevices.End (); ++i) // inst
+  for (NetDeviceContainer::Iterator i = netDevices.Begin (); i != netDevices.End (); ++i) 
     {
       apps.Add (InstallDhcpClientPriv (*i));
     }
@@ -86,21 +86,20 @@ Ptr<Application> DhcpHelper::InstallDhcpClientPriv (Ptr<NetDevice> netDevice) co
   Ptr<Node> node = netDevice->GetNode ();
   NS_ASSERT_MSG (node != 0, "DhcpClientHelper: NetDevice is not not associated with any node -> fail");
 
-  Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();     // ipassociated with the netDevice
+  Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();     
   NS_ASSERT_MSG (ipv4, "DhcpHelper: NetDevice is associated"
                  " with a node without IPv4 stack installed -> fail "
                  "(maybe need to use InternetStackHelper?)");
 
-  int32_t interface = ipv4->GetInterfaceForDevice (netDevice);    ///  interface number of an ipv4
+  int32_t interface = ipv4->GetInterfaceForDevice (netDevice);    
   if (interface == -1)
     {
-      interface = ipv4->AddInterface (netDevice);    // if not add that interface
+      interface = ipv4->AddInterface (netDevice);    
     }
   NS_ASSERT_MSG (interface >= 0, "DhcpHelper: Interface index not found");
 
-  ipv4->SetMetric (interface, 1); /// cost of packet transmission through that link 1
-  ipv4->SetUp (interface); 		 //// set the interface to be up
-
+  ipv4->SetMetric (interface, 1); 
+  ipv4->SetUp (interface); 	
 
   // Install the default traffic control configuration if the traffic
   // control layer has been aggregated, if this is not
@@ -114,9 +113,9 @@ Ptr<Application> DhcpHelper::InstallDhcpClientPriv (Ptr<NetDevice> netDevice) co
       tcHelper.Install (netDevice);   
     }
 
-  Ptr<DhcpClient> app = DynamicCast <DhcpClient> (m_clientFactory.Create<DhcpClient> ()); // create dhcpClient object
-  app->SetDhcpClientNetDevice (netDevice);  // invoking a fnction of dhcpClient
-  node->AddApplication (app);   // associate dhcpclient(arguement) to the node
+  Ptr<DhcpClient> app = DynamicCast <DhcpClient> (m_clientFactory.Create<DhcpClient> ()); 
+  app->SetDhcpClientNetDevice (netDevice);  
+  node->AddApplication (app);   
 
   return app;
 }
@@ -126,8 +125,8 @@ ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ip
                                                     Ipv4Address minAddr, Ipv4Address maxAddr,
                                                     Ipv4Address gateway)
 {
-  m_serverFactory.Set ("PoolAddresses", Ipv4AddressValue (poolAddr));  // assign the value to the variable PoolAddresses in Get TypeId
-  m_serverFactory.Set ("PoolMask", Ipv4MaskValue (poolMask)); // similiarly above
+  m_serverFactory.Set ("PoolAddresses", Ipv4AddressValue (poolAddr));  
+  m_serverFactory.Set ("PoolMask", Ipv4MaskValue (poolMask)); 
   m_serverFactory.Set ("FirstAddress", Ipv4AddressValue (minAddr));
   m_serverFactory.Set ("LastAddress", Ipv4AddressValue (maxAddr));
   m_serverFactory.Set ("Gateway", Ipv4AddressValue (gateway));
@@ -148,9 +147,9 @@ ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ip
   NS_ASSERT_MSG (interface >= 0, "DhcpHelper: Interface index not found");
 
   Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (serverAddr, poolMask);
-  ipv4->AddAddress (interface, ipv4Addr);  // add ip address to that interface
-  ipv4->SetMetric (interface, 1);          // setting cost of that interface
-  ipv4->SetUp (interface);					// setting up the interface
+  ipv4->AddAddress (interface, ipv4Addr);  
+  ipv4->SetMetric (interface, 1);         
+  ipv4->SetUp (interface);					
 
   // Install the default traffic control configuration if the traffic
   // control layer has been aggregated, if this is not
@@ -172,17 +171,17 @@ ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ip
           NS_ABORT_MSG ("DhcpHelper: Fixed address can not conflict with a pool: " << *iter << " is in [" << minAddr << ",  " << maxAddr << "]");
         }
     }
-  m_addressPools.push_back (std::make_pair (minAddr, maxAddr));  // m_addressPools - list address pools 
+  m_addressPools.push_back (std::make_pair (minAddr, maxAddr));  
 
   Ptr<Application> app = m_serverFactory.Create<DhcpServer> ();
-  node->AddApplication (app);      // invoking the DhcpServer Application
+  node->AddApplication (app);      
   return ApplicationContainer (app);   
 }
 
 // relay acting as a client
 
 ApplicationContainer DhcpHelper::InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address relayAddr,
-                                                     Ipv4Mask subMask, Ipv4Address dhcps)
+                                                   Ipv4Mask subMask, Ipv4Address dhcps)
 {
   m_relayFactory.Set ("RelayAddress", Ipv4AddressValue (relayAddr));
   m_relayFactory.Set ("SubnetMask", Ipv4MaskValue (subMask)); 

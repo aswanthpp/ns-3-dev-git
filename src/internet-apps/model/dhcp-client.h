@@ -81,6 +81,7 @@ public:
    * \return Ipv4Address of current DHCP server
    */
   Ipv4Address GetDhcpServer (void);  
+  
   /**
    * Assign a fixed random variable stream number to the random variables
    * used by this model. Return the number of streams (possibly zero) that

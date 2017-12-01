@@ -254,11 +254,14 @@ void DhcpHeader::ResetOpt ()
       m_opt[i] = false;
     }
 }
-void DhcpHeader::SetGiaddr(Ipv4Address giaddr){
+
+void DhcpHeader::SetGiaddr(Ipv4Address giaddr)
+{
   m_giAddr = giaddr;
 }
 
-Ipv4Address DhcpHeader::GetGiaddr(){
+Ipv4Address DhcpHeader::GetGiaddr()
+{
   return m_giAddr;
 }
 
