@@ -9,7 +9,7 @@ The Dynamic Host Configuration Protocol (DHCP) provides configuration parameters
 Relay agents are used to forward requests and replies between clients and servers when they are not on the same physical subnet. Relay agent forwarding is distinct from the normal forwarding of an IP router, where IP datagrams are switched between networks somewhat transparently. By contrast, relay agents receive DHCP messages and then generate a new DHCP message to send out on another interface. DHCP is designed to use the same relay agent behavior as specified in the BOOTP protocol specification. 
 
 ### Working
-* We have implemented the DHCP relay feature in ns-3 using the topology as shown :
+* Below is an example for a network topology consisting of a relay agent :
 
 
 
@@ -22,7 +22,7 @@ Relay agents are used to forward requests and replies between clients and server
 * The relay agent (which maintains the server's IP address) unicasts this packet to the DHCP server.
 * A DHCP server receiving a DHCP discover message responds to the client with a **DHCP Offer message** that is unicast to the relay agent.
 * Each server offer message contains the transaction ID of the received discover message, the proposed IP address for the client, the network mask, and an IP address lease time.
-* On receiving the offer message from the DHCP server, the relay agent broadcasts it to all node on the client side subnet using the IP broadcast address of 255.255.255.255.
+* On receiving the offer message from the DHCP server, the relay agent broadcasts it to all node(s) on the client side subnet using the IP broadcast address of 255.255.255.255.
 * The newly arriving client will respond to the offer with a  **DHCP Request message**.
 * The relay agent once again forwards this to the DHCP server.
 * The server responds to the DHCP request message with a **DHCP ACK message**.
