@@ -13,7 +13,7 @@ Using BOOTP relay agents eliminates the necessity of having a DHCP server on eac
 
 
 <p align="center">
-<img src="https://user-images.githubusercontent.com/19391965/33467526-0cf53c04-d67b-11e7-9d75-a60b47a0768c.png"/>
+<img src="https://user-images.githubusercontent.com/19391965/33467863-e3b40746-d67d-11e7-8181-87a32d2197ec.png"/>
 </p>
 
 
