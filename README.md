@@ -6,15 +6,28 @@
 
 The Dynamic Host Configuration Protocol (DHCP) provides configuration parameters to Internet hosts. DHCP consists of two components: a protocol for delivering host-specific configuration parameters from a DHCP server to a host and a mechanism for allocation of network addresses to hosts. However, it is not feasible to have a server on each subnet.
 
-Using BOOTP relay agents eliminates the necessity of having a DHCP server on each physical network segment. A BOOTP relay agent or relay agent is an Internet host or router that passes DHCP messages between DHCP clients and DHCP servers. DHCP is designed to use the same relay agent behavior as specified in the BOOTP protocol specification.
+Relay agents are used to forward requests and replies between clients and servers when they are not on the same physical subnet. Relay agent forwarding is distinct from the normal forwarding of an IP router, where IP datagrams are switched between networks somewhat transparently. By contrast, relay agents receive DHCP messages and then generate a new DHCP message to send out on another interface. DHCP is designed to use the same relay agent behavior as specified in the BOOTP protocol specification. 
 
-### Procedure
+### Working
 * We have implemented the DHCP relay feature in ns-3 using the topology as shown :
+
 
 
 <p align="center">
 <img src="https://user-images.githubusercontent.com/19391965/33467863-e3b40746-d67d-11e7-8181-87a32d2197ec.png"/>
 </p>
+
+* An incoming client(s) (source IP address of 0.0.0.0) first sends a **DHCP Discover message** within a UDP packet to port 67 as a broadcast (destination IP address of 255.255.255.255).
+* The relay agent receives this packet on the port in the client subnet and forwards to the server via the port in the server side.
+* The relay agent (which maintains the server's IP address) unicasts this packet to the DHCP server.
+* A DHCP server receiving a DHCP discover message responds to the client with a **DHCP Offer message** that is unicast to the relay agent.
+* Each server offer message contains the transaction ID of the received discover message, the proposed IP address for the client, the network mask, and an IP address lease time.
+* On receiving the offer message from the DHCP server, the relay agent broadcasts it to all node on the client side subnet using the IP broadcast address of 255.255.255.255.
+* The newly arriving client will respond to the offer with a  **DHCP Request message**.
+* The relay agent once again forwards this to the DHCP server.
+* The server responds to the DHCP request message with a **DHCP ACK message**.
+* The relay agent sends the ACK to the client confirming the requested parameters.
+* Once the client receives the DHCP ACK, the interaction is complete and the client can use the DHCP-allocated IP address for the lease duration (which can be renewed).
 
 
 ### To run the code
