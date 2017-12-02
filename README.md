@@ -36,7 +36,11 @@ Clone the repository to your local machine.
 
 `git clone https://github.com/aswanthpp/dhcp_relay_in_ns3.git`
 
-Then build ns-3.
+Replace the contents in ns3-dev driectory with the cloned dirctory files
+
+Change Directory to ns3-dev
+
+Then enable ns-3 examples and tests 
 
 `./waf configure --enable-examples --enable-tests`
 
