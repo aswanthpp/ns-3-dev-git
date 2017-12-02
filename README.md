@@ -32,15 +32,20 @@ Relay agents are used to forward requests and replies between clients and server
 
 ### To run the code
 
-Clone the repository to your local machine.
+First we need to download and use the development version of ns-3.
+If you have successfully installed mercurial, you can get copy of the development version with the following command :
+
+`hg clone http://code.nsnam.org/ns-3-allinone`
+
+`cd ns-3-allinone && ./download.py`
+
+`cd ns-3-dev`
+
+Now clone the repository to your local machine.
 
 `git clone https://github.com/aswanthpp/dhcp_relay_in_ns3.git`
 
-Replace the contents in ns3-dev driectory with the cloned dirctory files
-
-Change Directory to ns3-dev
-
-Then enable ns-3 examples and tests 
+Replace the contents in ns3-dev directory with the cloned directory files. Then build ns-3 using :
 
 `./waf configure --enable-examples --enable-tests`
 
