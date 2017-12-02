@@ -38,7 +38,7 @@ Clone the repository to your local machine.
 
 Then build ns-3.
 
-`./waf configure`
+`./waf configure --enable-examples --enable-tests`
 
 An example program for DHCP Relay has been provided in :
 
