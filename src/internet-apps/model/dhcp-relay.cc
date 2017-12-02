@@ -197,8 +197,8 @@ void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev,DhcpHeader header)
 	newDhcpHeader.SetTran (tran);
 	newDhcpHeader.SetChaddr (sourceChaddr);
 	newDhcpHeader.SetTime ();
-	newDhcpHeader.SetGiaddr("172.30.0.17"); /// need to add programmitically
-	newDhcpHeader.SetMask(mask);  //  assumed that every subnetworks has /24 poolMask
+	newDhcpHeader.SetGiaddr("172.30.0.17"); 			//!< need to add programatically
+	newDhcpHeader.SetMask(mask);            
 	packet->AddHeader (newDhcpHeader);
 
 	if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
