@@ -180,12 +180,13 @@ ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ip
 
 // relay acting as a client
 
-ApplicationContainer DhcpHelper::InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address relayAddr,
-                                                   Ipv4Mask subMask, Ipv4Address dhcps)
+ApplicationContainer DhcpHelper::InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address serverSideAddress,
+                                                   Ipv4Mask subMask, Ipv4Address dhcps, Ipv4Address clientSideAddress)
 {
-  m_relayFactory.Set ("RelayAddress", Ipv4AddressValue (relayAddr));
+  m_relayFactory.Set ("ServerSideAddress", Ipv4AddressValue (serverSideAddress));
   m_relayFactory.Set ("SubnetMask", Ipv4MaskValue (subMask)); 
   m_relayFactory.Set ("DhcpServerAddress", Ipv4AddressValue (dhcps));
+  m_relayFactory.Set ("ClientSideAddress", Ipv4AddressValue (clientSideAddress));
   
   Ptr<Node> node = netDevice->GetNode ();
   NS_ASSERT_MSG (node != 0, "DhcpHelper: NetDevice is not not associated with any node -> fail");
@@ -202,7 +203,7 @@ ApplicationContainer DhcpHelper::InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv
     }
   NS_ASSERT_MSG (interface >= 0, "DhcpHelper: Interface index not found");
 
-  Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (relayAddr, subMask);
+  Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (serverSideAddress, subMask);
   ipv4->AddAddress (interface, ipv4Addr);  
   ipv4->SetMetric (interface, 1);          
   ipv4->SetUp (interface);          

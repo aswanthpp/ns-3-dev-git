@@ -111,12 +111,13 @@ public:
    */
 	void SendAckClient(DhcpHeader header);
 
-	Ptr<Socket> m_socket_client; 				//!< socket bound to port 67
-	Ptr<Socket> m_socket_server;    			//!< socket bound to port 68   
-	Ptr<NetDevice> m_device;					//!< NetDevice pointer
-	Ipv4Address m_relayAddress;                 //!< Address assigned to the relay
-	Ipv4Address m_dhcps;						//!< Address of the DHCP server
-	Ipv4Mask m_subMask;  						//!< Mask of the Subnet
+	Ptr<Socket> m_socket_client; 				      //!< Socket bound to port 67
+	Ptr<Socket> m_socket_server;    			    //!< Socket bound to port 68   
+	Ptr<NetDevice> m_device;					        //!< NetDevice pointer
+	Ipv4Address m_relayServerSideAddress;         //!< Address assigned to the server side of relay
+  Ipv4Address m_relayClientSideAddress;         //!< Address assigned to the client side of relay
+	Ipv4Address m_dhcps;						          //!< Address of the DHCP server
+	Ipv4Mask m_subMask;  						          //!< Mask of the Subnet
 };
 
 } // namespace ns3

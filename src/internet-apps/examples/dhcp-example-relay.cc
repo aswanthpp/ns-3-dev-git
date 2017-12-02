@@ -76,7 +76,7 @@ main (int argc, char *argv[])
 
 	//DHCP Relay Agent
 	ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.16"),Ipv4Mask ("/24"), 
-		                                                             Ipv4Address ("172.30.1.12"));
+		                                                             Ipv4Address ("172.30.1.12"), Ipv4Address ("172.30.0.17"));
 
 	// This is just to show how it can be done.
 	DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), Ipv4Address ("172.30.1.14"));
