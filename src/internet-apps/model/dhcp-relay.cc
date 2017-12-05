@@ -1,5 +1,3 @@
-#include <bits/stdc++.h>
-/*from dhcp-client.cc*/
 #include "ns3/ipv4.h"
 #include "ns3/log.h"
 #include "ns3/double.h"
@@ -18,7 +16,6 @@
 #include "ns3/ipv4-routing-table-entry.h"
 #include "dhcp-relay.h"
 #include "dhcp-header.h"
-/*from dhcp-server.cc*/
 #include "ns3/assert.h"
 #include "ns3/ipv4-packet-info-tag.h"
 #include "ns3/config.h"

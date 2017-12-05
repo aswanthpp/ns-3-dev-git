@@ -1,7 +1,6 @@
 #ifndef DHCP_RELAY_H
 #define DHCP_RELAY_H
 
-/*from dhcp-server.h*/
 #include "ns3/application.h"
 #include "ns3/event-id.h"
 #include "ns3/ptr.h"
@@ -10,7 +9,6 @@
 #include "ns3/inet-socket-address.h"
 #include "dhcp-header.h"
 #include <map>
-/*from dhcp-client.h*/
 #include "ns3/ipv4-address.h"
 #include "ns3/random-variable-stream.h"
 #include <list>
