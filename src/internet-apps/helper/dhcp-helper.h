@@ -85,7 +85,7 @@ public:
    *
    * \param netDevice The NetDevice on which DHCP server application has to be installed
    * \param serverAddr The Ipv4Address of the server
-   * \param poolMask The mask of the allocated pool
+   * \param netMask The mask of the allocated pool
    * \param gateway The Ipv4Address of default gateway (optional)
    * \return The application container with DHCP server installed
    */

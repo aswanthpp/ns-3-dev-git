@@ -130,7 +130,7 @@ private:
   bool CheckIfValid(Ipv4Address reqAddr);
 
   Ptr<Socket> m_socket;                  //!< The socket bound to port 67
-  Ipv4Mask m_netMask;                      //!< Mask of the subnet to which server belongs
+  Ipv4Mask m_netMask;                    //!< Mask of the subnet to which server belongs
   Ipv4Address m_gateway;                 //!< The gateway address
 
   /// Pool address conatainer - Pool address / Pool mask + Min address / Max address
