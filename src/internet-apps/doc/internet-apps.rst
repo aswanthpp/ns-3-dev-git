@@ -70,10 +70,8 @@ following 6 files:
 * dhcp-server.cc,
 * dhcp-client.h,
 * dhcp-client.cc,
-* dhcp-header.h,
-* dhcp-header.cc,
-* dhcp-relay.h and
-* dhcp-relay.cc
+* dhcp-header.h and
+* dhcp-header.cc
 
 Helpers
 =======

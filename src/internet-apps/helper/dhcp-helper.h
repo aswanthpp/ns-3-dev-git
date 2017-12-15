@@ -60,13 +60,6 @@ public:
   void SetServerAttribute (std::string name, const AttributeValue &value);
 
   /**
-   * \brief Set DHCP relay attributes
-   * \param name Name of the attribute
-   * \param value Value to be set
-   */
-  void SetRelayAttribute (std::string name,const AttributeValue &value);
-
-  /**
    * \brief Install DHCP client of a nodes / NetDevice
    * \param netDevice The NetDevice that the DHCP client will use
    * \return The application container with DHCP client installed
@@ -96,31 +89,9 @@ public:
    * \return The application container with DHCP server installed
    */
   ApplicationContainer InstallDhcpServer (Ptr<NetDevice> netDevice, Ipv4Address serverAddr,
-                                          Ipv4Mask poolMask, Ipv4Address gateway = Ipv4Address ());
-
-  void AddAddressPool(ApplicationContainer * dhcpServerApp, Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, 
-                      Ipv4Address maxAddr);
-
-  /**
-   * \brief 
-   * \param netDevice 
-   * \param relayAddr 
-   * \param subMask 
-   * \param dhcps 
-   * \return The application container with DHCP relay installed
-   */
-  ApplicationContainer InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address serverSideAddress,
-                                         Ipv4Mask subMask, Ipv4Address dhcps);
-
-  /**
-   * \brief 
-   * \param 
-   * \param 
-   * \param 
-   * \return 
-   */
-  void AddRelayInterface (ApplicationContainer * dhcpRelayApp, Ptr<NetDevice> netDevice, Ipv4Address addr, Ipv4Mask mask);
-  
+                                          Ipv4Address poolAddr, Ipv4Mask poolMask,
+                                          Ipv4Address minAddr, Ipv4Address maxAddr,
+                                          Ipv4Address gateway = Ipv4Address ());
   /**
    * \brief Assign a fixed IP addresses to a net device.
    * \param netDevice The NetDevice on which the address has to be installed
@@ -139,17 +110,10 @@ private:
   Ptr<Application> InstallDhcpClientPriv (Ptr<NetDevice> netDevice) const;
   ObjectFactory m_clientFactory;                 //!< DHCP client factory
   ObjectFactory m_serverFactory;                 //!< DHCP server factory
-  ObjectFactory m_relayFactory;                  //!< DHCP relay factory
   std::list<Ipv4Address> m_fixedAddresses;       //!< list of fixed addresses already allocated.
-  std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > >m_addressPools; 
+  std::list< std::pair <Ipv4Address, Ipv4Address> > m_addressPools; //!< list of address pools.
 };
 
 } // namespace ns3
 
 #endif /* DHCP_HELPER_H */
-
-
-
-
-
-

@@ -281,18 +281,6 @@ public:
   uint32_t GetRebind (void) const;
 
   /**
-   * \brief 
-   * \return 
-   */ 
-  void SetGiaddr(Ipv4Address giaddr);
-
-  /**
-   * \brief 
-   * \return 
-   */ 
-  Ipv4Address GetGiaddr();
-
-  /**
    * \brief Reset the BOOTP options
    */
   void ResetOpt ();
