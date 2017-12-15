@@ -22,7 +22,7 @@ class Packet;
  * \ingroup dhcp
  *
  * \class DhcpRelay
- * \brief Implements the functionality of a DHCP server
+ * \brief Implements the functionality of a DHCP Relay
 */
 class DhcpRelay : public Application
 {
@@ -35,6 +35,7 @@ public:
   static TypeId GetTypeId (void);
 
   DhcpRelay ();
+
   virtual ~DhcpRelay ();
 
   /**
@@ -50,10 +51,12 @@ public:
   void SetDhcpRelayNetDevice (Ptr<NetDevice> netDevice); 
 
   /**
-   * \brief 
-   * \param 
+   * \brief Get the IPv4Address of current DHCP server
+   * \return Ipv4Address of current DHCP server
    */
-  void AddRelayInterfaceAddress (Ptr<NetDevice> netDevice, Ipv4Address addr, Ipv4Mask mask);
+  Ipv4Address GetDhcpServer (void);
+
+  
 
   /**
    * \brief Starts the DHCP Relay application
@@ -64,19 +67,22 @@ public:
    * \brief Stops the DHCP Relay application
    */   
   void StopApplication (void);
-	  
+
   /**
-   * \brief Get the IPv4Address of current DHCP server
-   * \return Ipv4Address of current DHCP server
+   * \brief Add gateway Ipv4Address and Ipv4mask of each subnet to DHCP Relay App
+   * \param addr Ipv4Address of the gateway to be initialised
+   * \param mask Ipv4mask of the mask of client subnet 
    */
-  Ipv4Address GetDhcpServer (void);
+  void AddRelayInterfaceAddress (Ipv4Address addr, Ipv4Mask mask);
+	  
+  
 
 	protected:
 	  virtual void DoDispose (void);
 
 	private:
-		static const int PORT_CLIENT = 68;                 //!< relay acting as client
-		static const int PORT_SERVER = 67;                 //!< relay acting as server
+		static const int PORT_CLIENT = 68;                 //!< Port number of DHCP Client
+		static const int PORT_SERVER = 67;                 //!< Port number of DHCP server
 	
 	/**
 	 * \brief Handles incoming packets from the network
@@ -115,20 +121,19 @@ public:
    */
 	void SendAckClient(DhcpHeader header);
 
-	Ptr<Socket> m_socket_client; 				      //!< Socket bound to port 67
-	Ptr<Socket> m_socket_server;    			    //!< Socket bound to port 68   
-	Ptr<NetDevice> m_device;					        //!< NetDevice pointer
-	Ipv4Address m_relayServerSideAddress;         //!< Address assigned to the server side of relay
-  Ipv4Address m_relayClientSideAddress;         //!< Address assigned to the client side of relay
-	Ipv4Address m_dhcps;						          //!< Address of the DHCP server
-	Ipv4Mask m_subMask;  						          //!< Mask of the Subnet
-
-  ///
+  /// Client Subnet ID Conatiner - Gateway address / Subnet mask 
   typedef std::list< std::pair<Ipv4Address, Ipv4Mask> > RelayCInterface;
-  /// 
+  /// Client Subnet ID iterator - Gateway address / Subnet mask 
   typedef std::list< std::pair<Ipv4Address, Ipv4Mask> >::iterator  RelayCInterfaceIter;
 
-  RelayCInterface m_relayCInterfaces;
+	Ptr<Socket> m_socket_client; 				          //!< Socket bound to port 67
+	Ptr<Socket> m_socket_server;    			        //!< Socket bound to port 68   
+	Ptr<NetDevice> m_device;					            //!< NetDevice pointer
+	Ipv4Address m_relayServerSideAddress;         //!< Address assigned to the server side of relay
+  Ipv4Address m_relayClientSideAddress;         //!< Address assigned to the client side of relay
+	Ipv4Address m_dhcps;						              //!< Address of the DHCP server
+	Ipv4Mask m_subMask;  						              //!< Mask of the Subnet
+  RelayCInterface m_relayCInterfaces;           //!< ClientSide GateWay and Subnet Mask 
 };
 
 } // namespace ns3
