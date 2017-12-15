@@ -19,6 +19,7 @@
 #include "ns3/assert.h"
 #include "ns3/ipv4-packet-info-tag.h"
 #include "ns3/config.h"
+#include "ns3/ipv4-l3-protocol.h"
 
 namespace ns3 { 
 
@@ -36,11 +37,6 @@ DhcpRelay::GetTypeId (void)
                    "Relay address at the server side",
                    Ipv4AddressValue (),
                    MakeIpv4AddressAccessor (&DhcpRelay::m_relayServerSideAddress),
-                   MakeIpv4AddressChecker ())
-		.AddAttribute ("ClientSideAddress",
-                   "Relay address at the client side",
-                   Ipv4AddressValue (),
-                   MakeIpv4AddressAccessor (&DhcpRelay::m_relayClientSideAddress),
                    MakeIpv4AddressChecker ())
 		.AddAttribute ("DhcpServerAddress",
                    "Address of DHCP server",
@@ -126,7 +122,7 @@ void DhcpRelay::NetHandlerServer (Ptr<Socket> socket)
 	DhcpHeader header; 
 	Ptr<Packet> packet = 0;
 	Address from;
-	packet = m_socket_client->RecvFrom (from);  
+	packet = m_socket_client->RecvFrom (from);
 
 	Ipv4PacketInfoTag interfaceInfo;
 
@@ -194,13 +190,33 @@ void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev,DhcpHeader header)
 	Address sourceChaddr = header.GetChaddr ();
 	uint32_t mask = header.GetMask();
 
+	Ptr<Ipv4L3Protocol> ipv4 = GetNode ()->GetObject< Ipv4L3Protocol > ();
+	int32_t ifIndex = ipv4->GetInterfaceForDevice (iDev);
+
+	for (uint32_t i=0; i<ipv4->GetNAddresses (ifIndex); i++)
+	{
+	  m_relayClientSideAddress = ipv4->GetAddress (ifIndex, i).GetLocal ();
+	}
+
+    RelayCInterfaceIter i;
+    for(i = m_relayCInterfaces.begin(); i != m_relayCInterfaces.end(); i++)
+    {
+    	if(m_relayClientSideAddress.Get() == (*i).first.Get())
+    	{
+    		mask = (*i).second.Get();
+    		break;
+    	}
+    }
+
+    if (m_relayClientSideAddress.CombineMask(Ipv4Mask(mask)).Get() != m_relayServerSideAddress.CombineMask(m_subMask).Get())
+   {  
 	newDhcpHeader.ResetOpt ();
 	newDhcpHeader.SetType (DhcpHeader::DHCPDISCOVER);
 	newDhcpHeader.SetTran (tran);
 	newDhcpHeader.SetChaddr (sourceChaddr);
 	newDhcpHeader.SetTime ();
 	newDhcpHeader.SetGiaddr (m_relayClientSideAddress); 
-	newDhcpHeader.SetMask (mask);    //  assumed that every subnetwork has /24 poolMask
+	newDhcpHeader.SetMask (mask);    
 	packet->AddHeader (newDhcpHeader);
 
 	if ((m_socket_server->SendTo (packet, 0, InetSocketAddress (m_dhcps, PORT_SERVER))) >= 0)
@@ -211,6 +227,7 @@ void DhcpRelay::SendDiscover(Ptr<NetDevice> iDev,DhcpHeader header)
 		{
 			NS_LOG_INFO ("Error while sending DHCP DISCOVER from relay to server");
 		}
+   }
 }
 
 void DhcpRelay::SendOffer(DhcpHeader header)
@@ -305,6 +322,7 @@ void DhcpRelay::SendAckClient(DhcpHeader header)
 	newDhcpHeader.SetYiaddr (address);
 	newDhcpHeader.SetChaddr (sourceChaddr);
 	newDhcpHeader.SetTran (tran);
+	newDhcpHeader.SetDhcps (m_dhcps);
 	newDhcpHeader.SetTime ();
 	packet->AddHeader(newDhcpHeader);
 
@@ -317,5 +335,11 @@ void DhcpRelay::SendAckClient(DhcpHeader header)
 			NS_LOG_INFO ("Error while sending DHCP ACK from relay to client");
 		}
 }
+
+void DhcpRelay::AddRelayInterfaceAddress(Ptr<NetDevice> netDevice, Ipv4Address addr, Ipv4Mask mask)
+{
+	m_relayCInterfaces.push_back(std::make_pair(addr,mask));
+}
+
 
 }

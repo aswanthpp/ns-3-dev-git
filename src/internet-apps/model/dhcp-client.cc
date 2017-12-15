@@ -123,7 +123,6 @@ Ptr<NetDevice> DhcpClient::GetDhcpClientNetDevice (void)
   return m_device;
 }
 
-
 void DhcpClient::SetDhcpClientNetDevice (Ptr<NetDevice> netDevice)
 {
   m_device = netDevice;
@@ -160,6 +159,7 @@ DhcpClient::StartApplication (void)
   m_remoteAddress = Ipv4Address ("255.255.255.255");
   m_myAddress = Ipv4Address ("0.0.0.0");
   m_gateway = Ipv4Address ("0.0.0.0");
+  
   Ptr<Ipv4> ipv4 = GetNode ()->GetObject<Ipv4> (); 
   uint32_t ifIndex = ipv4->GetInterfaceForDevice (m_device); 
 
@@ -421,7 +421,9 @@ void DhcpClient::AcceptAck (DhcpHeader header, Address from)
   Simulator::Remove (m_rebindEvent);
   Simulator::Remove (m_refreshEvent);
   Simulator::Remove (m_timeout);
+
   NS_LOG_INFO ("DHCP ACK received");
+  
   Ptr<Ipv4> ipv4 = GetNode ()->GetObject<Ipv4> ();
   int32_t ifIndex = ipv4->GetInterfaceForDevice (m_device);
 
@@ -458,7 +460,16 @@ void DhcpClient::AcceptAck (DhcpHeader header, Address from)
 
   staticRouting->SetDefaultRoute (m_gateway, ifIndex, 0);
 
-  m_remoteAddress = InetSocketAddress::ConvertFrom (from).GetIpv4 ();
+  if (header.GetDhcps() == Ipv4Address("0.0.0.0"))
+  {
+    m_remoteAddress = InetSocketAddress::ConvertFrom (from).GetIpv4 ();
+  }
+  else
+  {
+    m_remoteAddress = header.GetDhcps();
+  }
+
+  NS_LOG_INFO("My New Address is "<<m_myAddress);
   NS_LOG_INFO ("Current DHCP Server is " << m_remoteAddress);
 
   m_offerList.clear ();

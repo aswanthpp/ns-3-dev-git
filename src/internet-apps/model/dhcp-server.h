@@ -65,6 +65,8 @@ public:
    */
   void AddStaticDhcpEntry (Address chaddr, Ipv4Address addr);
 
+  void AddSubnets(Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, Ipv4Address maxAddr);
+
 
 protected:
   virtual void DoDispose (void);
@@ -78,6 +80,8 @@ private:
    * \param socket Socket bound to port 67 of the DHCP server
    */
   void NetHandler (Ptr<Socket> socket);
+
+  bool CheckIfValid(Ipv4Address reqAddr);
 
   /**
    * \brief Sends DHCP offer after receiving DHCP Discover
@@ -111,12 +115,16 @@ private:
   virtual void StopApplication (void);
 
   Ptr<Socket> m_socket;                  //!< The socket bound to port 67
-  Ipv4Address m_poolAddress;             //!< The network address available to the server
-  Ipv4Address m_minAddress;              //!< The first address in the address pool
-  Ipv4Address m_maxAddress;              //!< The last address in the address pool
   Ipv4Mask m_poolMask;                   //!< The network mask of the pool
   Ipv4Address m_gateway;                 //!< The gateway address
 
+  ///
+  typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > > PoolAddress; 
+  ///
+  typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > >::iterator PoolAddressIter; 
+  ///
+  typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > >::const_iterator PoolAddressCIter; 
+  
   /// Leased address container - chaddr + IP addr / lease time
   typedef std::map<Address, std::pair<Ipv4Address, uint32_t> > LeasedAddress;
   /// Leased address iterator - chaddr + IP addr / lease time
@@ -131,9 +139,14 @@ private:
   /// Expired address const iterator - chaddr
   typedef std::list<Address>::const_iterator ExpiredAddressCIter;
 
-  /// Available address container - IP addr
-  typedef std::list<Ipv4Address> AvailableAddress;
+  /// 
+  typedef std::list< std::pair<Ipv4Address, Ipv4Mask> > AvailableAddress;
+  /// 
+  typedef std::list< std::pair<Ipv4Address, Ipv4Mask> >::iterator  AvailableAddressIter;
+  /// 
+  typedef std::list< std::pair<Ipv4Address, Ipv4Mask> >::const_iterator AvailableAddressCIter;
 
+  PoolAddress m_poolAddresses;
   LeasedAddress m_leasedAddresses;       //!< Leased address and their status (cache memory)
   ExpiredAddress m_expiredAddresses;     //!< Expired addresses to be reused (chaddr of the clients)
   AvailableAddress m_availableAddresses; //!< Available addresses to be used (IP addresses)

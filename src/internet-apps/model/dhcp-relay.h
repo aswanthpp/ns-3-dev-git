@@ -50,6 +50,12 @@ public:
   void SetDhcpRelayNetDevice (Ptr<NetDevice> netDevice); 
 
   /**
+   * \brief 
+   * \param 
+   */
+  void AddRelayInterfaceAddress (Ptr<NetDevice> netDevice, Ipv4Address addr, Ipv4Mask mask);
+
+  /**
    * \brief Starts the DHCP Relay application
    */
   void StartApplication (void);
@@ -116,6 +122,13 @@ public:
   Ipv4Address m_relayClientSideAddress;         //!< Address assigned to the client side of relay
 	Ipv4Address m_dhcps;						          //!< Address of the DHCP server
 	Ipv4Mask m_subMask;  						          //!< Mask of the Subnet
+
+  ///
+  typedef std::list< std::pair<Ipv4Address, Ipv4Mask> > RelayCInterface;
+  /// 
+  typedef std::list< std::pair<Ipv4Address, Ipv4Mask> >::iterator  RelayCInterfaceIter;
+
+  RelayCInterface m_relayCInterfaces;
 };
 
 } // namespace ns3

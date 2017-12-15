@@ -39,6 +39,7 @@
 #include "ns3/ipv4.h"
 #include <map>
 #include <algorithm>
+#include <math.h>
 
 namespace ns3 {
 
@@ -67,21 +68,6 @@ DhcpServer::GetTypeId (void)
                    TimeValue (Seconds (25)),                    
                    MakeTimeAccessor (&DhcpServer::m_rebind),  
                    MakeTimeChecker ())
-    .AddAttribute ("PoolAddresses",
-                   "Pool of addresses to provide on request.",
-                   Ipv4AddressValue (),
-                   MakeIpv4AddressAccessor (&DhcpServer::m_poolAddress),
-                   MakeIpv4AddressChecker ())
-    .AddAttribute ("FirstAddress",
-                   "The First valid address that can be given.",
-                   Ipv4AddressValue (),
-                   MakeIpv4AddressAccessor (&DhcpServer::m_minAddress),
-                   MakeIpv4AddressChecker ())
-    .AddAttribute ("LastAddress",
-                   "The Last valid address that can be given.",
-                   Ipv4AddressValue (),
-                   MakeIpv4AddressAccessor (&DhcpServer::m_maxAddress),
-                   MakeIpv4AddressChecker ())
     .AddAttribute ("PoolMask",
                    "Mask of the pool of addresses.",
                    Ipv4MaskValue (),
@@ -117,7 +103,12 @@ void DhcpServer::StartApplication (void)
 {
   NS_LOG_FUNCTION (this);
 
-  NS_ASSERT_MSG (m_minAddress < m_maxAddress,"Invalid Address range");   
+  /***************************************************************************************************************/
+  PoolAddressIter iter;
+  for (iter = m_poolAddresses.begin (); iter != m_poolAddresses.end (); iter ++)
+  {
+        NS_ASSERT_MSG ((*iter).second.first < (*iter).second.second,"Invalid Address range");   
+  } 
 
   Ipv4Address myOwnAddress;
 
@@ -130,26 +121,31 @@ void DhcpServer::StartApplication (void)
 
   //add the DHCP local address to the leased addresses list, if it is defined!
   Ptr<Ipv4> ipv4 = GetNode ()->GetObject<Ipv4> ();   
-  int32_t ifIndex = ipv4->GetInterfaceForPrefix (m_poolAddress, m_poolMask);   
 
-  if (ifIndex < 0)
-    {
-      NS_ABORT_MSG ("DHCP daemon must be run on the same subnet it is assigning the addresses.");
-    }
+  int32_t ifIndex;
+  int flag = 0;
+  
+  /***************************************************************************************************************/
+  for (iter = m_poolAddresses.begin (); iter != m_poolAddresses.end (); iter ++)
+  {
+   ifIndex = ipv4->GetInterfaceForPrefix ((*iter).first.first, (*iter).first.second);   
 
-  for (addrIndex = 0; addrIndex < ipv4->GetNAddresses (ifIndex); addrIndex++)
-    {
-      if (ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().CombineMask (m_poolMask) == m_poolAddress &&
-          ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().Get () >= m_minAddress.Get () &&
-          ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().Get () <= m_maxAddress.Get ())
-        {
-          // set infinite GRANTED_LEASED_TIME for my address
-
-          myOwnAddress = ipv4->GetAddress (ifIndex, addrIndex).GetLocal ();
-          m_leasedAddresses[Address ()] = std::make_pair (myOwnAddress, 0xffffffff); 
-          break; 
-        }
-    }
+   for (addrIndex = 0; addrIndex < ipv4->GetNAddresses (ifIndex); addrIndex++)
+     {
+       if (ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().CombineMask ((*iter).first.second) == (*iter).first.first &&
+           ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().Get () >= (*iter).second.first.Get () &&
+           ipv4->GetAddress (ifIndex, addrIndex).GetLocal ().Get () <= (*iter).second.second.Get ())
+         {
+           // set infinite GRANTED_LEASED_TIME for my address    
+           myOwnAddress = ipv4->GetAddress (ifIndex, addrIndex).GetLocal ();
+           m_leasedAddresses[Address ()] = std::make_pair (myOwnAddress, 0xffffffff); 
+           flag = 1;
+           break; 
+         }
+     }
+     if (flag == 1)
+        break;
+  }
 
   TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
   m_socket = Socket::CreateSocket (GetNode (), tid);
@@ -159,16 +155,21 @@ void DhcpServer::StartApplication (void)
   m_socket->Bind (local);
   m_socket->SetRecvPktInfo (true);
 
-  uint32_t range = m_maxAddress.Get () - m_minAddress.Get () + 1; 
-  for (uint32_t searchSeq = 0; searchSeq < range; searchSeq ++)
-    {
-      Ipv4Address poolAddress = Ipv4Address (m_minAddress.Get () + searchSeq);
-      if (poolAddress != myOwnAddress)
-        {
-          NS_LOG_LOGIC ("Adding " << poolAddress << " to the pool");
-          m_availableAddresses.push_back (poolAddress);    
-        }
-    }
+  /***************************************************************************************************************/
+  uint32_t range;
+  for (iter = m_poolAddresses.begin (); iter != m_poolAddresses.end (); iter ++)
+  {
+   range = (*iter).second.second.Get () - (*iter).second.first.Get () + 1; 
+   for (uint32_t searchSeq = 0; searchSeq < range; searchSeq ++)
+     {
+       Ipv4Address poolAddress = Ipv4Address ((*iter).second.first.Get () + searchSeq);
+       if (poolAddress != myOwnAddress)
+         {
+           NS_LOG_LOGIC ("Adding " << poolAddress << " to the pool");
+           m_availableAddresses.push_back (std::make_pair(poolAddress, (*iter).first.second));    
+         }
+     }
+  }
 
   m_socket->SetRecvCallback (MakeCallback (&DhcpServer::NetHandler, this));
   m_expiredEvent = Simulator::Schedule (Seconds (1), &DhcpServer::TimerHandler, this); 
@@ -220,7 +221,7 @@ void DhcpServer::NetHandler (Ptr<Socket> socket)
   Ptr<Packet> packet = 0;
   Address from;
   packet = m_socket->RecvFrom (from); 
-
+  
   InetSocketAddress senderAddr = InetSocketAddress::ConvertFrom (from);  
 
   Ipv4PacketInfoTag interfaceInfo;
@@ -239,10 +240,30 @@ void DhcpServer::NetHandler (Ptr<Socket> socket)
     {
       SendOffer (iDev, header, senderAddr); 
     }
-  if (header.GetType () == DhcpHeader::DHCPREQ && (header.GetReq ()).Get () >= m_minAddress.Get () && (header.GetReq ()).Get () <= m_maxAddress.Get ())
+  /***************************************************************************************************************/
+  if (header.GetType () == DhcpHeader::DHCPREQ && CheckIfValid(header.GetReq ()))
     {
       SendAck (iDev, header, senderAddr); 
     }
+}
+
+void DhcpServer::AddSubnets(Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, 
+                            Ipv4Address maxAddr)
+{
+  m_poolAddresses.push_back(std::make_pair(std::make_pair(poolAddr, poolMask),std::make_pair(minAddr, maxAddr)));
+}
+
+/***************************************************************************************************************/
+bool DhcpServer::CheckIfValid(Ipv4Address reqAddr)
+{
+  bool flag = false;
+  PoolAddressIter iter;
+  for (iter = m_poolAddresses.begin (); iter != m_poolAddresses.end (); iter ++)
+  {
+        if((reqAddr.Get () >= (*iter).second.first.Get ()) && (reqAddr.Get () <= (*iter).second.second.Get ()))
+          flag = true;
+  } 
+  return flag;
 }
 
 void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddress from)
@@ -271,7 +292,6 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
 
       m_expiredAddresses.remove (sourceChaddr);
       offeredAddress = m_leasedAddresses[sourceChaddr].first;
-
     }
   else 
     {
@@ -279,8 +299,28 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
       if (!m_availableAddresses.empty ())
         {
           // use an address never used before (if there is one)
-          offeredAddress = m_availableAddresses.front ();
-          m_availableAddresses.pop_front ();
+          /***********************************************************************************************************/
+          AvailableAddressIter i; 
+          if (giAddr == Ipv4Address ("0.0.0.0"))
+          {
+                // use an address never used before (if there is one)
+                i = m_availableAddresses.begin ();
+                offeredAddress = (*i).first;
+                m_availableAddresses.pop_front ();
+          }
+          else
+          {
+            for (i = m_availableAddresses.begin (); i != m_availableAddresses.end (); i++)
+            {
+               if(giAddr.CombineMask(Ipv4Mask(mask)).Get () == (*i).first.CombineMask((*i).second).Get ())
+               {
+                  offeredAddress = (*i).first;
+                  m_availableAddresses.erase (i);
+                  break;      
+               }
+
+            }
+          }
         }
       else
         {
@@ -294,7 +334,7 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
             }
         }
     }
-
+    
   if (offeredAddress != Ipv4Address ())
     {
       m_leasedAddresses[sourceChaddr] = std::make_pair (offeredAddress, m_lease.GetSeconds ());  
@@ -308,22 +348,23 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
       Ptr<Ipv4> ipv4 = GetNode ()->GetObject<Ipv4> ();
       Ipv4Address myAddress = ipv4->SelectSourceAddress (iDev, offeredAddress, Ipv4InterfaceAddress::InterfaceAddressScope_e::GLOBAL);
 
-      newDhcpHeader.SetDhcps (myAddress);   
-      newDhcpHeader.SetMask (m_poolMask.Get ());
+      newDhcpHeader.SetDhcps (myAddress);  
+      newDhcpHeader.SetMask(mask);    
       newDhcpHeader.SetTran (tran);  
       newDhcpHeader.SetLease (m_lease.GetSeconds ()); 
       newDhcpHeader.SetRenew (m_renew.GetSeconds ()); 
       newDhcpHeader.SetRebind (m_rebind.GetSeconds ()); 
       newDhcpHeader.SetTime ();
       newDhcpHeader.SetGiaddr(giAddr);   
-      newDhcpHeader.SetMask(mask);    
       if (m_gateway != Ipv4Address ())
         {
           newDhcpHeader.SetRouter (m_gateway);
         }
       packet->AddHeader (newDhcpHeader);
 
-      if ((m_socket->SendTo (packet, 0, InetSocketAddress (from.GetIpv4 (), from.GetPort ()))) >= 0)
+      if (giAddr == Ipv4Address ("0.0.0.0"))
+      {
+      if ((m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()))) >= 0)
         {
           NS_LOG_INFO ("DHCP OFFER" << " Offered Address: " << offeredAddress);
         }
@@ -331,6 +372,18 @@ void DhcpServer::SendOffer (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAd
         {
           NS_LOG_INFO ("Error while sending DHCP OFFER");
         }
+      }
+      else
+      {
+        if ((m_socket->SendTo (packet, 0, InetSocketAddress (from.GetIpv4 (), from.GetPort ()))) >= 0)
+        {
+          NS_LOG_INFO ("DHCP OFFER" << " Offered Address: " << offeredAddress);
+        }
+      else
+        {
+          NS_LOG_INFO ("Error while sending DHCP OFFER");
+        }
+      }
     }
 }
 
@@ -362,14 +415,30 @@ void DhcpServer::SendAck (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddr
       newDhcpHeader.SetTran (tran);
       newDhcpHeader.SetTime ();
       packet->AddHeader (newDhcpHeader);
-      if (from.GetIpv4 () != address)
-        {
-          m_socket->SendTo (packet, 0, InetSocketAddress (from.GetIpv4 (), from.GetPort ()));
-        }
+
+      if (from.GetIpv4 () != Ipv4Address ("0.0.0.0"))
+      {
+        if (from.GetIpv4 () != address)
+          {
+            m_socket->SendTo (packet, 0, InetSocketAddress (from.GetIpv4 (), from.GetPort ()));
+          }
+        else
+          {
+            m_socket->SendTo (packet, 0, from);
+          }
+      }
       else
-        {
-          m_socket->SendTo (packet, 0, from);
-        }
+      {
+        if (from.GetIpv4 () != address)
+          {
+            m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()));
+          }
+        else
+          {
+            m_socket->SendTo (packet, 0, from);
+          }
+      }
+
     }
   else
     {
@@ -382,14 +451,30 @@ void DhcpServer::SendAck (Ptr<NetDevice> iDev, DhcpHeader header, InetSocketAddr
       newDhcpHeader.SetTran (tran);
       newDhcpHeader.SetTime ();
       packet->AddHeader (newDhcpHeader);
-      if (from.GetIpv4 () != address)
-        {
-          m_socket->SendTo (packet, 0, InetSocketAddress (from.GetIpv4 (), from.GetPort ()));
-        }
+      
+      if (from.GetIpv4 () != Ipv4Address ("0.0.0.0"))
+      {
+        if (from.GetIpv4 () != address)
+          {
+            m_socket->SendTo (packet, 0, InetSocketAddress (from.GetIpv4 (), from.GetPort ()));
+          }
+        else
+          {
+            m_socket->SendTo (packet, 0, from);
+          }
+      }
       else
-        {
-          m_socket->SendTo (packet, 0, from);
-        }
+      {
+        if (from.GetIpv4 () != address)
+          {
+            m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), from.GetPort ()));
+          }
+        else
+          {
+            m_socket->SendTo (packet, 0, from);
+          }
+      }
+
       NS_LOG_INFO ("IP addr does not exists or released!");
     }
 }
@@ -399,8 +484,7 @@ void DhcpServer::AddStaticDhcpEntry (Address chaddr, Ipv4Address addr)
   NS_LOG_FUNCTION (this << chaddr << addr);
   Address cleanedCaddr;
 
-  NS_ASSERT_MSG (addr.Get () >= m_minAddress.Get () && addr.Get () <= m_maxAddress.Get (),
-                 "Required address is not in the pool " << addr << " is not in [" << m_minAddress << ", " << m_maxAddress << "]");
+  NS_ASSERT_MSG (CheckIfValid(addr), "Required address is not in the pool ");
 
   // We need to cleanup the type from the stored chaddr, or later we'll fail to compare it.
   // Moreover, the length is always 16, because chaddr is 16 bytes.
@@ -413,11 +497,20 @@ void DhcpServer::AddStaticDhcpEntry (Address chaddr, Ipv4Address addr)
   NS_ASSERT_MSG (m_leasedAddresses.find (cleanedCaddr) == m_leasedAddresses.end (),
                  "Client has already an active lease: " << m_leasedAddresses[cleanedCaddr].first);
 
-  AvailableAddress::iterator it = find (m_availableAddresses.begin (), m_availableAddresses.end (), addr);
-  NS_ASSERT_MSG (it == m_availableAddresses.end (),
-                 "Required address is not available (perhaps it has been already assigned): " << addr);
+  /***********************************************************************************************************/
+  AvailableAddressIter i;	
+  for (i = m_availableAddresses.begin (); i != m_availableAddresses.end (); i++)
+  {
+      if((*i).first.Get () == addr.Get ())
+      {
+      	m_availableAddresses.erase (i);
+      	break;
+      }
+  }
+  
+  NS_ASSERT_MSG (i == m_availableAddresses.end (),
+                  "Required address is not available (perhaps it has been already assigned): " << addr);
 
-  m_availableAddresses.remove (addr);
   m_leasedAddresses[cleanedCaddr] = std::make_pair (addr, 0xffffffff); 
 }
 

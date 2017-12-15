@@ -67,19 +67,25 @@ main (int argc, char *argv[])
 	NS_LOG_INFO ("Setup the IP addresses and create DHCP applications.");
 	DhcpHelper dhcpHelper;
 
-	Ipv4InterfaceContainer relayClient = dhcpHelper.InstallFixedAddress (devNet.Get (3), Ipv4Address ("172.30.0.17"), Ipv4Mask ("/24"));   
-
 	// DHCP server
 	ApplicationContainer dhcpServerApp = dhcpHelper.InstallDhcpServer (p2pDevices.Get (1), Ipv4Address ("172.30.1.12"),
-		                                                               Ipv4Address ("172.30.1.0"), Ipv4Mask ("/24"),
-		                                                               Ipv4Address ("172.30.1.10"), Ipv4Address ("172.30.1.15"));
+		                                                               Ipv4Mask ("/24"));
+
+    dhcpHelper.AddAddressPool(&dhcpServerApp, Ipv4Address ("172.30.1.0"), Ipv4Mask ("/24"), Ipv4Address ("172.30.1.10"),
+    	                      Ipv4Address ("172.30.1.15")); 
+
+    dhcpHelper.AddAddressPool(&dhcpServerApp, Ipv4Address ("172.30.0.0"), Ipv4Mask ("/24"), Ipv4Address ("172.30.0.10"),
+    	                      Ipv4Address ("172.30.0.15")); 
 
 	//DHCP Relay Agent
-	ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.16"),Ipv4Mask ("/24"), 
-		                                                             Ipv4Address ("172.30.1.12"), Ipv4Address ("172.30.0.17"));
+	ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.16"),
+		                                                             Ipv4Mask ("/24"), Ipv4Address ("172.30.1.12"));
+    
+    dhcpHelper.AddRelayInterface (&dhcpRelayApp, devNet.Get (3), Ipv4Address ("172.30.0.17"), Ipv4Mask ("/24")); 
 
 	// This is just to show how it can be done.
-	DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), Ipv4Address ("172.30.1.14"));
+	DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), 
+		                     Ipv4Address ("172.30.0.14"));
 
 	dhcpServerApp.Start (Seconds (0.0));
 	dhcpServerApp.Stop (stopTime);

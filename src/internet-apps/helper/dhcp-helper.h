@@ -96,9 +96,10 @@ public:
    * \return The application container with DHCP server installed
    */
   ApplicationContainer InstallDhcpServer (Ptr<NetDevice> netDevice, Ipv4Address serverAddr,
-                                          Ipv4Address poolAddr, Ipv4Mask poolMask,
-                                          Ipv4Address minAddr, Ipv4Address maxAddr,
-                                          Ipv4Address gateway = Ipv4Address ());
+                                          Ipv4Mask poolMask, Ipv4Address gateway = Ipv4Address ());
+
+  void AddAddressPool(ApplicationContainer * dhcpServerApp, Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, 
+                      Ipv4Address maxAddr);
 
   /**
    * \brief 
@@ -109,8 +110,17 @@ public:
    * \return The application container with DHCP relay installed
    */
   ApplicationContainer InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address serverSideAddress,
-                                         Ipv4Mask subMask, Ipv4Address dhcps, Ipv4Address clientSideAddress);
+                                         Ipv4Mask subMask, Ipv4Address dhcps);
 
+  /**
+   * \brief 
+   * \param 
+   * \param 
+   * \param 
+   * \return 
+   */
+  void AddRelayInterface (ApplicationContainer * dhcpRelayApp, Ptr<NetDevice> netDevice, Ipv4Address addr, Ipv4Mask mask);
+  
   /**
    * \brief Assign a fixed IP addresses to a net device.
    * \param netDevice The NetDevice on which the address has to be installed
@@ -131,7 +141,7 @@ private:
   ObjectFactory m_serverFactory;                 //!< DHCP server factory
   ObjectFactory m_relayFactory;                  //!< DHCP relay factory
   std::list<Ipv4Address> m_fixedAddresses;       //!< list of fixed addresses already allocated.
-  std::list< std::pair <Ipv4Address, Ipv4Address> > m_addressPools; //!< list of address pools.
+  std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > >m_addressPools; 
 };
 
 } // namespace ns3
