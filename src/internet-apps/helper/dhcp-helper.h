@@ -90,7 +90,7 @@ public:
    * \return The application container with DHCP server installed
    */
   ApplicationContainer InstallDhcpServer (Ptr<NetDevice> netDevice, Ipv4Address serverAddr,
-                                          Ipv4Mask poolMask, Ipv4Address gateway = Ipv4Address ());
+                                          Ipv4Mask netMask, Ipv4Address gateway = Ipv4Address ());
 
 
   /**

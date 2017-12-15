@@ -119,10 +119,10 @@ Ptr<Application> DhcpHelper::InstallDhcpClientPriv (Ptr<NetDevice> netDevice) co
   return app;
 }
 
-ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ipv4Address serverAddr,Ipv4Mask poolMask,
+ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ipv4Address serverAddr,Ipv4Mask netMask,
                                                     Ipv4Address gateway)
 {
-  m_serverFactory.Set ("PoolMask", Ipv4MaskValue (poolMask)); 
+  m_serverFactory.Set ("NetMask", Ipv4MaskValue (netMask)); 
   m_serverFactory.Set ("Gateway", Ipv4AddressValue (gateway));
 
   Ptr<Node> node = netDevice->GetNode ();
@@ -140,7 +140,7 @@ ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ip
     }
   NS_ASSERT_MSG (interface >= 0, "DhcpHelper: Interface index not found");
 
-  Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (serverAddr, poolMask);
+  Ipv4InterfaceAddress ipv4Addr = Ipv4InterfaceAddress (serverAddr, netMask);
   ipv4->AddAddress (interface, ipv4Addr);  
   ipv4->SetMetric (interface, 1);         
   ipv4->SetUp (interface);					
