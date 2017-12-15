@@ -59,7 +59,6 @@ public:
 
   /**
    * \brief Add a static entry to the pool.
-   *
    * \param chaddr The client chaddr.
    * \param addr The address to handle to the client.
    */
@@ -68,7 +67,6 @@ public:
 
   /**
    * \brief Add PoolAddress information  of subnet 
-   *
    * \param poolAddr The Ipv4Address (network part) of the allocated pool
    * \param poolMask The mask of the allocated pool
    * \param minAddr The lower bound of the Ipv4Address pool
