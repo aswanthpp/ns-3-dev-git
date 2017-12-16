@@ -122,7 +122,6 @@ Ptr<Application> DhcpHelper::InstallDhcpClientPriv (Ptr<NetDevice> netDevice) co
 ApplicationContainer DhcpHelper::InstallDhcpServer (Ptr<NetDevice> netDevice, Ipv4Address serverAddr,Ipv4Mask netMask,
                                                     Ipv4Address gateway)
 {
-  m_serverFactory.Set ("NetMask", Ipv4MaskValue (netMask)); 
   m_serverFactory.Set ("Gateway", Ipv4AddressValue (gateway));
 
   Ptr<Node> node = netDevice->GetNode ();

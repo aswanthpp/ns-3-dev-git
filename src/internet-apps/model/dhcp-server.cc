@@ -67,11 +67,6 @@ DhcpServer::GetTypeId (void)
                    TimeValue (Seconds (25)),                    
                    MakeTimeAccessor (&DhcpServer::m_rebind),  
                    MakeTimeChecker ())
-    .AddAttribute ("NetMask",
-                   "Mask of the subnet to which server belongs.",
-                   Ipv4MaskValue (),
-                   MakeIpv4MaskAccessor (&DhcpServer::m_netMask),
-                   MakeIpv4MaskChecker ())
     .AddAttribute ("Gateway",
                    "Address of default gateway",
                    Ipv4AddressValue (),
