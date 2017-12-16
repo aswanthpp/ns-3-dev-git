@@ -92,16 +92,15 @@ Examples
 The examples for DHCP without relay agent can be found at ``src/internet-apps/examples/dhcp-example.cc``
 The examples for DHCP with relay agent can be found at ``src/internet-apps/examples/dhcp-example-relay.cc``
 
-
 Scope and Limitations
 =====================
 
-The server should be provided with a network address, mask and a range of address
-for the pool. One client application can be installed on only one netdevice in a
-node, and can configure address for only that netdevice.
+The DHCP server should be provided with a network address, mask and at least one pool 
+of addresses. One client application can be installed on only one netdevice in a
+node, and can configure address for only that netdevice. 
 
-The relay agent shoul be provided with IP address of DHCP server and gateway address,
-mask and a range of address for the pool for each client subnet.
+The relay agent should be provided with the client side and the server side interface 
+addresses along with the corresponding masks, and address of the DHCP server.
 
 The following five basic DHCP messages are supported: 
 
@@ -127,9 +126,9 @@ The client identifier option (61) can be implemented in near future.
 In the current implementation, a DHCP client can obtain IPv4 address dynamically 
 from the DHCP server, and can renew it within a lease time period.
 
-Multiple DHCP servers can be configured , but this implementation does not support
+Multiple DHCP servers can be configured, but this implementation does not support
 the use of a DHCP Relay yet.
 
-Multple relay agent can be configured but only one DHCP server for each relay agent ,
-because load balancing of DHCP reqyest is not configured yet
+Multple relay agents can be configured but with only one DHCP server for each relay 
+agent, because load balancing of DHCP request is not configured yet.
 
