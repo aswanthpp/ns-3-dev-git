@@ -496,6 +496,14 @@ void DhcpServer::AddStaticDhcpEntry (Address chaddr, Ipv4Address addr)
 void DhcpServer::AddSubnets(Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, 
                             Ipv4Address maxAddr)
 {
+  PoolAddressIter i;
+  for(i = m_poolAddresses.begin() ; i != m_poolAddresses.end() ; i++)
+  {
+    if((*i).first.first.CombineMask((*i).first.second).Get() == poolAddr.CombineMask(poolMask).Get()){
+      
+      NS_ABORT_MSG("Same Pool Address cannot be assigned twice");
+    }
+  }
   m_poolAddresses.push_back(std::make_pair(std::make_pair(poolAddr, poolMask),std::make_pair(minAddr, maxAddr)));
 }
 

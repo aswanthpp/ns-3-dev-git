@@ -338,6 +338,14 @@ void DhcpRelay::SendAckClient(DhcpHeader header)
 
 void DhcpRelay::AddRelayInterfaceAddress(Ipv4Address addr, Ipv4Mask mask)
 {
+	RelayCInterfaceIter i;
+	for (i = m_relayCInterfaces.begin() ; i != m_relayCInterfaces.end() ; i++)
+	{
+		if(((*i).first.CombineMask((*i).second).Get() == addr.CombineMask(mask).Get() ) || ((*i).first.Get() == addr.Get()))
+		{
+			NS_ABORT_MSG("Relay agent cannot have same gateway for two subnets ");
+		}
+	}
 	m_relayCInterfaces.push_back(std::make_pair(addr,mask));
 }
 
