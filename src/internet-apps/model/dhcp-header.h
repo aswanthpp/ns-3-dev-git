@@ -281,14 +281,14 @@ public:
   uint32_t GetRebind (void) const;
 
   /**
-   * \brief Set the gateway address for each header
-   * \param giAddr Ipv4Address of Gateway
+   * \brief Set the gateway address for a header
+   * \param giAddr Ipv4Address of gateway
    */ 
   void SetGiAddr(Ipv4Address giAddr);
 
   /**
-   * \brief  Return Gateway address of the header 
-   * \return Ipv4Address
+   * \brief Return gateway address of the header 
+   * \return Ipv4Address of gateway
    */ 
   Ipv4Address GetGiAddr();
 
@@ -318,7 +318,7 @@ private:
   Ipv4Address m_yiAddr;                  //!< Your (client) IP address
   Ipv4Address m_ciAddr;                  //!< The IP address of the client
   Ipv4Address m_siAddr;                  //!< Next Server IP address
-  Ipv4Address m_giAddr;                  //!< Relay Agent IP address
+  Ipv4Address m_giAddr;                  //!< Gateway IP address
   Ipv4Address m_dhcps;                   //!< DHCP server IP address
   Ipv4Address m_req;                     //!< Requested Address
   Ipv4Address m_route;                   //!< Router Option Address

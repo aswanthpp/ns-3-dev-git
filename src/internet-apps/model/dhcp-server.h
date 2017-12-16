@@ -64,23 +64,21 @@ public:
    */
   void AddStaticDhcpEntry (Address chaddr, Ipv4Address addr);
 
-
   /**
-   * \brief Add PoolAddress information  of subnet 
-   * \param poolAddr The Ipv4Address (network part) of the allocated pool
-   * \param poolMask The mask of the allocated pool
-   * \param minAddr The lower bound of the Ipv4Address pool
-   * \param maxAddr The upper bound of the Ipv4Address poo
-   * \param addr The address to handle to the client.
+   * \brief Assign an address pool to the DHCP server 
+   * \param poolAddr The Ipv4Address (network part) of the address pool
+   * \param poolMask The mask of the address pool
+   * \param minAddr The lower bound of the address pool
+   * \param maxAddr The upper bound of the address pool
    */
-  void AddSubnets(Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, Ipv4Address maxAddr);
+  void AddSubnets (Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, Ipv4Address maxAddr);
 
 
 protected:
   virtual void DoDispose (void);
 
 private:
-  static const int PORT = 67;                       //!< Port number of DHCP server  
+  static const int PORT = 67;   //!< Port number of DHCP server  
 
   /**
    * \brief Handles incoming packets from the network
@@ -119,22 +117,21 @@ private:
    */
   virtual void StopApplication (void);
 
-
   /**
-   * \brief Check the given Ipv4Address is in valid range
-   * \param reqAddr Ipv4Address needs to check the validty
-   * \return boolean true if reqAddr si within the range
+   * \brief Check whether the given Ipv4Address is in valid range
+   * \param reqAddr Ipv4Address to be checked for validity
+   * \return true if address is within the range
    */
-  bool CheckIfValid(Ipv4Address reqAddr);
+  bool CheckIfValid (Ipv4Address reqAddr);
 
   Ptr<Socket> m_socket;                  //!< The socket bound to port 67
   Ipv4Address m_gateway;                 //!< The gateway address
 
-  /// Pool address conatainer - Pool address / Pool mask + Min address / Max address
+  /// Pool address conatainer - pool address / pool mask + min address / max address
   typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > > PoolAddress; 
-  /// Pool address iterator - Pool address / Pool mask + Min address / Max address
+  /// Pool address iterator - pool address / pool mask + min address / max address
   typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > >::iterator PoolAddressIter; 
-  /// Pool address const iterator - Pool address / Pool mask + Min address / Max address
+  /// Pool address const iterator - pool address / pool mask + min address / max address
   typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > >::const_iterator PoolAddressCIter; 
   
   /// Leased address container - chaddr + IP addr / lease time

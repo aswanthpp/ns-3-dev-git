@@ -245,16 +245,6 @@ uint32_t DhcpHeader::GetRebind (void) const
   return m_rebind;
 }
 
-void DhcpHeader::ResetOpt ()
-{
-  m_len = 241;
-  int i;
-  for (i = 0; i < OP_END; i++)
-    {
-      m_opt[i] = false;
-    }
-}
-
 void DhcpHeader::SetGiAddr (Ipv4Address giAddr)
 {
   m_giAddr = giAddr;
@@ -263,6 +253,16 @@ void DhcpHeader::SetGiAddr (Ipv4Address giAddr)
 Ipv4Address DhcpHeader::GetGiAddr ()
 {
   return m_giAddr;
+}
+
+void DhcpHeader::ResetOpt ()
+{
+  m_len = 241;
+  int i;
+  for (i = 0; i < OP_END; i++)
+    {
+      m_opt[i] = false;
+    }
 }
 
 uint32_t DhcpHeader::GetSerializedSize (void) const
