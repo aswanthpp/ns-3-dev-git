@@ -59,7 +59,7 @@ Once ns-3 has been built, we can run the example file as :
 
 ### Future Work
 
-The existing DHCPv4 code limits the server to assign addresses only from its own subnet. We have prepared a document listing the changes required to make the code scalable so as to let the server assign addresses from different subnets. The proposed changes can be found <a href="https://github.com/aswanthpp/Implementation-of-DHCP-Relay-in-ns-3/wiki/Future-Work" target="blank">here</a>.
+The existing DHCPv4 code limits the only one server for each realy agent in a netwrok. We have prepared a document listing the changes required to make the code scalable so as to let the server assign addresses from different subnets. The proposed changes can be found <a href="https://github.com/aswanthpp/Implementation-of-DHCP-Relay-in-ns-3/wiki/Future-Work" target="blank">here</a>.
 
 ### References
 
