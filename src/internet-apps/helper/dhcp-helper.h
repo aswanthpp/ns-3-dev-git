@@ -92,7 +92,6 @@ public:
   ApplicationContainer InstallDhcpServer (Ptr<NetDevice> netDevice, Ipv4Address serverAddr,
                                           Ipv4Mask netMask, Ipv4Address gateway = Ipv4Address ());
 
-
   /**
    * \brief Assign a fixed IP addresses to a net device.
    * \param netDevice The NetDevice on which the address has to be installed
@@ -102,37 +101,34 @@ public:
    */
   Ipv4InterfaceContainer InstallFixedAddress (Ptr<NetDevice> netDevice, Ipv4Address addr, Ipv4Mask mask);
 
-
   /**
-   * \brief Install DHCP Relay of a node / NetDevice
-   * \param netDevice The NetDevice on which DHCP Relay application has to be installed
-   * \param serverSideAddress Ipv4Address of DHCP Relay connected to server subnet
+   * \brief Install DHCP relay of a node / NetDevice
+   * \param netDevice The NetDevice on which DHCP relay application has to be installed
+   * \param serverSideAddress Ipv4Address of relay interface communicating with DHCP server
    * \param subMask Ipv4mask of the server subnet
-   * \param dhcps Ip4Address of DHCP Server
+   * \param dhcps Ip4Address of server
    * \return The application container with DHCP relay installed
    */
   ApplicationContainer InstallDhcpRelay (Ptr<NetDevice> netDevice, Ipv4Address serverSideAddress,
                                          Ipv4Mask subMask, Ipv4Address dhcps);
 
-  
-
   /**
-   * \brief Add address pool in installed DHCP server
-   * \param dhcpServerApp Application container pointer on which DHCP server Application is installed
-   * \param poolAddr The Ipv4Address (network part) of the allocated pool
-   * \param poolMask The mask of the allocated pool
-   * \param minAddr The lower bound of the Ipv4Address pool
-   * \param maxAddr The upper bound of the Ipv4Address poo
+   * \brief Assign an address pool to the installed DHCP server
+   * \param dhcpServerApp Pointer to the DHCP server application
+   * \param poolAddr The Ipv4Address (network part) of the address pool
+   * \param poolMask The mask of the address pool
+   * \param minAddr The lower bound of the address pool
+   * \param maxAddr The upper bound of the address pool
    */
-   void AddAddressPool(ApplicationContainer * dhcpServerApp, Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, 
-                      Ipv4Address maxAddr);
+   void AddAddressPool (ApplicationContainer * dhcpServerApp, Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, 
+                        Ipv4Address maxAddr);
 
    /**
-   * \brief Add Subnet information in installed DHCP Relay and install fixed address to netdevice
-   * \param dhcpRelayApp Pointer on which DHCP Server Application is installed
-   * \param netDevice The NetDevice on which gateway Ipv4Address has to assgined
-   * \param addr Ipv4Address of Gateway to be initialised
-   * \param mask Ipv4mask of Subnet of respective client subnet
+   * \brief Add an interface to the DHCP relay to communicate with a client subnet without a DHCP server 
+   * \param dhcpRelayApp Pointer to the DHCP relay application 
+   * \param netDevice The NetDevice associated with the interface
+   * \param addr Ipv4Address of the interface
+   * \param mask Ipv4mask of the client subnet
    */
    void AddRelayInterface (ApplicationContainer * dhcpRelayApp, Ptr<NetDevice> netDevice, Ipv4Address addr, Ipv4Mask mask);
 
@@ -144,14 +140,14 @@ private:
    */
   Ptr<Application> InstallDhcpClientPriv (Ptr<NetDevice> netDevice) const;
 
-  /// Address Pool container - PoolAddress / PoolMask + Min Adddress / Max Address
+  /// Address pool container - pool address / pool mask + min address / max address
   typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask> , std::pair <Ipv4Address,Ipv4Address> > > AddressPool; 
 
   ObjectFactory m_clientFactory;                 //!< DHCP client factory
   ObjectFactory m_serverFactory;                 //!< DHCP server factory
   ObjectFactory m_relayFactory;                  //!< DHCP relay factory
   std::list<Ipv4Address> m_fixedAddresses;       //!< list of fixed addresses already allocated.
-  AddressPool m_addressPools;                    //!< list of Address pool >
+  AddressPool m_addressPools;                    //!< list of address pools 
 };
 
 } // namespace ns3

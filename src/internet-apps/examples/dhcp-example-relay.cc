@@ -23,11 +23,9 @@ main (int argc, char *argv[])
 
   cmd.Parse (argc, argv);
 
-  // GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
-
   if (verbose)
 	{
-      LogComponentEnable ("DhcpServer", LOG_LEVEL_ALL);
+    LogComponentEnable ("DhcpServer", LOG_LEVEL_ALL);
 	  LogComponentEnable ("DhcpClient", LOG_LEVEL_ALL);
 	  LogComponentEnable ("DhcpRelay", LOG_LEVEL_ALL);
 	  LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
@@ -67,7 +65,6 @@ main (int argc, char *argv[])
   tcpip.Install (relay);
   tcpip.Install (p2pNodes.Get (1));
 
-
   Ipv4AddressHelper address;
   address.SetBase ("172.30.1.0", "255.255.255.0");
   Ipv4InterfaceContainer p2pInterfaces;
@@ -85,23 +82,23 @@ main (int argc, char *argv[])
 
   // DHCP server
   ApplicationContainer dhcpServerApp = dhcpHelper.InstallDhcpServer (p2pDevices.Get (1), Ipv4Address ("172.30.1.12"),
-		                                                             Ipv4Mask ("/24"));
+		                                                                 Ipv4Mask ("/24"));
 
   dhcpHelper.AddAddressPool(&dhcpServerApp, Ipv4Address ("172.30.1.0"), Ipv4Mask ("/24"), Ipv4Address ("172.30.1.10"),
-    	                    Ipv4Address ("172.30.1.15")); 
+    	                      Ipv4Address ("172.30.1.15")); 
 
   dhcpHelper.AddAddressPool(&dhcpServerApp, Ipv4Address ("172.30.0.0"), Ipv4Mask ("/24"), Ipv4Address ("172.30.0.10"),
-    	                    Ipv4Address ("172.30.0.15")); 
+    	                      Ipv4Address ("172.30.0.15")); 
 
-  //DHCP Relay Agent
+  // DHCP Relay Agent
   ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.16"),
-		                                                           Ipv4Mask ("/24"), Ipv4Address ("172.30.1.12"));
+		                                                               Ipv4Mask ("/24"), Ipv4Address ("172.30.1.12"));
     
   dhcpHelper.AddRelayInterface (&dhcpRelayApp, devNet.Get (3), Ipv4Address ("172.30.0.17"), Ipv4Mask ("/24")); 
 
   // This is just to show how it can be done.
   DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), 
-		                   Ipv4Address ("172.30.0.14"));
+		                       Ipv4Address ("172.30.0.14"));
 
   dhcpServerApp.Start (Seconds (0.0));
   dhcpServerApp.Stop (stopTime);
