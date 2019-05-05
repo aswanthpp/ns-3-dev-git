@@ -1,27 +1,3 @@
-/* -*- Mode:C++; c-file-style:"gnu"; indent-tabs-mode:nil; -*- */
-/*
- * Copyright (c) 2011 UPB
- * Copyright (c) 2017 NITK Surathkal
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License version 2 as
- * published by the Free Software Foundation;
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * Author: Radu Lupu <rlupu@elcom.pub.ro>
- *         Ankit Deepak <adadeepak8@gmail.com>
- *         Deepti Rajagopal <deeptir96@gmail.com>
- *
- */
-
 #include <fstream>
 #include "ns3/core-module.h"
 #include "ns3/network-module.h"
@@ -33,7 +9,7 @@
 
 using namespace ns3;
 
-NS_LOG_COMPONENT_DEFINE ("DhcpExample");
+NS_LOG_COMPONENT_DEFINE ("DhcpExampleRelay");
 
 int
 main (int argc, char *argv[])
@@ -47,25 +23,25 @@ main (int argc, char *argv[])
 
   cmd.Parse (argc, argv);
 
-  // GlobalValue::Bind ("ChecksumEnabled", BooleanValue (true));
-
   if (verbose)
     {
       LogComponentEnable ("DhcpServer", LOG_LEVEL_ALL);
       LogComponentEnable ("DhcpClient", LOG_LEVEL_ALL);
+      LogComponentEnable ("DhcpRelay", LOG_LEVEL_ALL);
       LogComponentEnable ("UdpEchoServerApplication", LOG_LEVEL_INFO);
       LogComponentEnable ("UdpEchoClientApplication", LOG_LEVEL_INFO);
+      //LogComponentEnable ("DhcpExampleRelay", LOG_LEVEL_ALL);
     }
 
   Time stopTime = Seconds (20);
 
   NS_LOG_INFO ("Create nodes.");
   NodeContainer nodes;
-  NodeContainer router;
-  nodes.Create (3);
-  router.Create (2);
+  NodeContainer relay;
+  nodes.Create (1);
+  relay.Create (1);
 
-  NodeContainer net (nodes, router);
+  NodeContainer net (nodes, relay);
 
   NS_LOG_INFO ("Create channels.");
   CsmaHelper csma;
@@ -75,7 +51,7 @@ main (int argc, char *argv[])
   NetDeviceContainer devNet = csma.Install (net);
 
   NodeContainer p2pNodes;
-  p2pNodes.Add (net.Get (4));
+  p2pNodes.Add (net.Get (1));
   p2pNodes.Create (1);
 
   PointToPointHelper pointToPoint;
@@ -87,7 +63,7 @@ main (int argc, char *argv[])
 
   InternetStackHelper tcpip;
   tcpip.Install (nodes);
-  tcpip.Install (router);
+  tcpip.Install (relay);
   tcpip.Install (p2pNodes.Get (1));
 
   Ipv4AddressHelper address;
@@ -105,28 +81,37 @@ main (int argc, char *argv[])
   NS_LOG_INFO ("Setup the IP addresses and create DHCP applications.");
   DhcpHelper dhcpHelper;
 
-  // The router must have a fixed IP.
-  Ipv4InterfaceContainer fixedNodes = dhcpHelper.InstallFixedAddress (devNet.Get (4), Ipv4Address ("172.30.0.17"), Ipv4Mask ("/24"));
-  // Not really necessary, IP forwarding is enabled by default in IPv4.
-  fixedNodes.Get (0).first->SetAttribute ("IpForward", BooleanValue (true));
-
   // DHCP server
-  ApplicationContainer dhcpServerApp = dhcpHelper.InstallDhcpServer (devNet.Get (3), Ipv4Address ("172.30.0.12"),
-                                                                     Ipv4Address ("172.30.0.0"), Ipv4Mask ("/24"),
-                                                                     Ipv4Address ("172.30.0.10"), Ipv4Address ("172.30.0.15"),
-                                                                     Ipv4Address ("172.30.0.17"));
+  ApplicationContainer dhcpServerApp = dhcpHelper.InstallDhcpServer (p2pDevices.Get (1), Ipv4Address ("172.30.1.12"),
+                                                                     Ipv4Mask ("/24"));
+
+  dhcpHelper.AddAddressPool (&dhcpServerApp, Ipv4Address ("172.30.1.0"), Ipv4Mask ("/24"), Ipv4Address ("172.30.1.11"),
+                             Ipv4Address ("172.30.1.13"));
+
+  dhcpHelper.AddAddressPool (&dhcpServerApp, Ipv4Address ("172.30.0.0"), Ipv4Mask ("/24"), Ipv4Address ("172.30.0.11"),
+                             Ipv4Address ("172.30.0.13"));
+
+  // DHCP Relay Agent
+  ApplicationContainer dhcpRelayApp = dhcpHelper.InstallDhcpRelay (p2pDevices.Get (0), Ipv4Address ("172.30.1.16"),
+                                                                   Ipv4Mask ("/24"), Ipv4Address ("172.30.1.12"));
+
+  dhcpHelper.AddRelayInterface (&dhcpRelayApp, devNet.Get (1), Ipv4Address ("172.30.0.17"), Ipv4Mask ("/24"));
 
   // This is just to show how it can be done.
-  DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (), Ipv4Address ("172.30.0.14"));
-
+  /*DynamicCast<DhcpServer> (dhcpServerApp.Get (0))->AddStaticDhcpEntry (devNet.Get (2)->GetAddress (),
+                                       Ipv4Address ("172.30.0.14"));
+  */
   dhcpServerApp.Start (Seconds (0.0));
   dhcpServerApp.Stop (stopTime);
+
+  dhcpRelayApp.Start (Seconds (0.0));
+  dhcpRelayApp.Stop (stopTime);
 
   // DHCP clients
   NetDeviceContainer dhcpClientNetDevs;
   dhcpClientNetDevs.Add (devNet.Get (0));
-  dhcpClientNetDevs.Add (devNet.Get (1));
-  dhcpClientNetDevs.Add (devNet.Get (2));
+  //dhcpClientNetDevs.Add (devNet.Get (1));
+  //dhcpClientNetDevs.Add (devNet.Get (2));
 
   ApplicationContainer dhcpClients = dhcpHelper.InstallDhcpClient (dhcpClientNetDevs);
   dhcpClients.Start (Seconds (1.0));
@@ -136,16 +121,16 @@ main (int argc, char *argv[])
 
   ApplicationContainer serverApps = echoServer.Install (p2pNodes.Get (1));
   serverApps.Start (Seconds (0.0));
-  serverApps.Stop (stopTime);
+  serverApps.Stop (Seconds (11.0));
 
   UdpEchoClientHelper echoClient (p2pInterfaces.GetAddress (1), 9);
   echoClient.SetAttribute ("MaxPackets", UintegerValue (100));
   echoClient.SetAttribute ("Interval", TimeValue (Seconds (1.0)));
   echoClient.SetAttribute ("PacketSize", UintegerValue (1024));
 
-  ApplicationContainer clientApps = echoClient.Install (nodes.Get (1));
+  ApplicationContainer clientApps = echoClient.Install (nodes.Get (0));
   clientApps.Start (Seconds (10.0));
-  clientApps.Stop (stopTime);
+  clientApps.Stop (Seconds (11.0));
 
   Simulator::Stop (stopTime + Seconds (10.0));
 

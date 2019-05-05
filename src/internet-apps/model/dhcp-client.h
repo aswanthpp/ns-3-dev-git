@@ -26,6 +26,10 @@
 #define DHCP_CLIENT_H
 
 #include "ns3/application.h"
+#include "ns3/event-id.h"
+#include "ns3/ptr.h"
+#include "ns3/ipv4-address.h"
+#include "ns3/random-variable-stream.h"
 #include "ns3/traced-value.h"
 #include "dhcp-header.h"
 #include <list>
@@ -34,7 +38,6 @@ namespace ns3 {
 
 class Socket;
 class Packet;
-class RandomVariableStream;
 
 /**
  * \ingroup dhcp
@@ -184,7 +187,7 @@ private:
   bool m_offered;                        //!< Specify if the client has got any offer
   std::list<DhcpHeader> m_offerList;     //!< Stores all the offers given to the client
   uint32_t m_tran;                       //!< Stores the current transaction number to be used
-  TracedCallback<const Ipv4Address&> m_newLease;//!< Trace of new lease
+  TracedCallback<const Ipv4Address&> m_newLease; //!< Trace of new lease
   TracedCallback<const Ipv4Address&> m_expiry;  //!< Trace of lease expire
 };
 

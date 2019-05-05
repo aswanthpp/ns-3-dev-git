@@ -24,9 +24,10 @@
 
 #include "ns3/assert.h"
 #include "ns3/log.h"
+#include "ns3/header.h"
 #include "ns3/simulator.h"
-#include "ns3/address-utils.h"
 #include "dhcp-header.h"
+#include "ns3/address-utils.h"
 
 namespace ns3 {
 
@@ -242,6 +243,16 @@ void DhcpHeader::SetRebind (uint32_t time)
 uint32_t DhcpHeader::GetRebind (void) const
 {
   return m_rebind;
+}
+
+void DhcpHeader::SetGiAddr (Ipv4Address giAddr)
+{
+  m_giAddr = giAddr;
+}
+
+Ipv4Address DhcpHeader::GetGiAddr ()
+{
+  return m_giAddr;
 }
 
 void DhcpHeader::ResetOpt ()

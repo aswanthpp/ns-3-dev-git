@@ -26,7 +26,11 @@
 #define DHCP_SERVER_H
 
 #include "ns3/application.h"
-#include "ns3/ipv4-address.h"
+#include "ns3/event-id.h"
+#include "ns3/ptr.h"
+#include "ns3/address.h"
+#include "ns3/traced-value.h"
+#include "ns3/inet-socket-address.h"
 #include "dhcp-header.h"
 #include <map>
 
@@ -55,18 +59,26 @@ public:
 
   /**
    * \brief Add a static entry to the pool.
-   *
    * \param chaddr The client chaddr.
    * \param addr The address to handle to the client.
    */
   void AddStaticDhcpEntry (Address chaddr, Ipv4Address addr);
+
+  /**
+   * \brief Assign an address pool to the DHCP server 
+   * \param poolAddr The Ipv4Address (network part) of the address pool
+   * \param poolMask The mask of the address pool
+   * \param minAddr The lower bound of the address pool
+   * \param maxAddr The upper bound of the address pool
+   */
+  void AddSubnets (Ipv4Address poolAddr, Ipv4Mask poolMask, Ipv4Address minAddr, Ipv4Address maxAddr);
 
 
 protected:
   virtual void DoDispose (void);
 
 private:
-  static const int PORT = 67;                       //!< Port number of DHCP server
+  static const int PORT = 67;   //!< Port number of DHCP server
 
   /**
    * \brief Handles incoming packets from the network
@@ -101,9 +113,16 @@ private:
   virtual void StartApplication (void);
 
   /**
-   * \brief Stops the DHCP client application
+   * \brief Stops the DHCP Server application
    */
   virtual void StopApplication (void);
+
+  /**
+   * \brief Check whether the given Ipv4Address is in valid range
+   * \param reqAddr Ipv4Address to be checked for validity
+   * \return true if address is within the range
+   */
+  bool CheckIfValid (Ipv4Address reqAddr);
 
   Ptr<Socket> m_socket;                  //!< The socket bound to port 67
   Ipv4Address m_poolAddress;             //!< The network address available to the server
@@ -111,6 +130,13 @@ private:
   Ipv4Address m_maxAddress;              //!< The last address in the address pool
   Ipv4Mask m_poolMask;                   //!< The network mask of the pool
   Ipv4Address m_gateway;                 //!< The gateway address
+
+  /// Pool address conatainer - pool address / pool mask + min address / max address
+  typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask>, std::pair <Ipv4Address,Ipv4Address> > > PoolAddress;
+  /// Pool address iterator - pool address / pool mask + min address / max address
+  typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask>, std::pair <Ipv4Address,Ipv4Address> > >::iterator PoolAddressIter;
+  /// Pool address const iterator - pool address / pool mask + min address / max address
+  typedef std::list < std::pair < std::pair <Ipv4Address,Ipv4Mask>, std::pair <Ipv4Address,Ipv4Address> > >::const_iterator PoolAddressCIter;
 
   /// Leased address container - chaddr + IP addr / lease time
   typedef std::map<Address, std::pair<Ipv4Address, uint32_t> > LeasedAddress;
@@ -126,9 +152,14 @@ private:
   /// Expired address const iterator - chaddr
   typedef std::list<Address>::const_iterator ExpiredAddressCIter;
 
-  /// Available address container - IP addr
-  typedef std::list<Ipv4Address> AvailableAddress;
+  /// Available address container - IP address / subnet mask
+  typedef std::list< std::pair<Ipv4Address, Ipv4Mask> > AvailableAddress;
+  /// Available address iterator - IP address / subnet mask
+  typedef std::list< std::pair<Ipv4Address, Ipv4Mask> >::iterator  AvailableAddressIter;
+  /// Available address const iterator - IP address / subnet mask
+  typedef std::list< std::pair<Ipv4Address, Ipv4Mask> >::const_iterator AvailableAddressCIter;
 
+  PoolAddress m_poolAddresses;           //!< Pool address and their range and subnet mask
   LeasedAddress m_leasedAddresses;       //!< Leased address and their status (cache memory)
   ExpiredAddress m_expiredAddresses;     //!< Expired addresses to be reused (chaddr of the clients)
   AvailableAddress m_availableAddresses; //!< Available addresses to be used (IP addresses)

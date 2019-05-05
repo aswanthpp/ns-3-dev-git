@@ -23,9 +23,22 @@
  *
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <list>
+
 #include "ns3/ipv4.h"
 #include "ns3/log.h"
+#include "ns3/double.h"
+#include "ns3/ipv4-address.h"
+#include "ns3/nstime.h"
+#include "ns3/inet-socket-address.h"
+#include "ns3/socket.h"
+#include "ns3/simulator.h"
+#include "ns3/socket-factory.h"
+#include "ns3/packet.h"
 #include "ns3/ipv4-static-routing-helper.h"
+#include "ns3/uinteger.h"
 #include "ns3/random-variable-stream.h"
 #include "ns3/pointer.h"
 #include "ns3/string.h"
@@ -372,7 +385,14 @@ void DhcpClient::Request (void)
       header.SetReq (m_offeredAddress);
       header.SetChaddr (m_chaddr);
       packet->AddHeader (header);
-      m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), DHCP_PEER_PORT));
+      if ((m_socket->SendTo (packet, 0, InetSocketAddress (Ipv4Address ("255.255.255.255"), DHCP_PEER_PORT))) >= 0)
+        {
+          NS_LOG_INFO ("DHCP REQUEST sent");
+        }
+      else
+        {
+          NS_LOG_INFO ("Error while sending DHCP REQ to " << m_remoteAddress);
+        }
       m_state = WAIT_ACK;
       m_nextOfferEvent = Simulator::Schedule (m_nextoffer, &DhcpClient::Select, this);
     }
@@ -408,7 +428,9 @@ void DhcpClient::AcceptAck (DhcpHeader header, Address from)
   Simulator::Remove (m_rebindEvent);
   Simulator::Remove (m_refreshEvent);
   Simulator::Remove (m_timeout);
+
   NS_LOG_INFO ("DHCP ACK received");
+
   Ptr<Ipv4> ipv4 = GetNode ()->GetObject<Ipv4> ();
   int32_t ifIndex = ipv4->GetInterfaceForDevice (m_device);
 
@@ -445,7 +467,16 @@ void DhcpClient::AcceptAck (DhcpHeader header, Address from)
 
   staticRouting->SetDefaultRoute (m_gateway, ifIndex, 0);
 
-  m_remoteAddress = InetSocketAddress::ConvertFrom (from).GetIpv4 ();
+  if (header.GetDhcps () == Ipv4Address ("0.0.0.0"))
+    {
+      m_remoteAddress = InetSocketAddress::ConvertFrom (from).GetIpv4 ();
+    }
+  else
+    {
+      m_remoteAddress = header.GetDhcps ();
+    }
+
+  NS_LOG_INFO ("My New Address is " << m_myAddress);
   NS_LOG_INFO ("Current DHCP Server is " << m_remoteAddress);
 
   m_offerList.clear ();
@@ -454,7 +485,6 @@ void DhcpClient::AcceptAck (DhcpHeader header, Address from)
   m_timeout =  Simulator::Schedule (m_lease, &DhcpClient::RemoveAndStart, this);
   m_state = REFRESH_LEASE;
 }
-
 void DhcpClient::RemoveAndStart ()
 {
   NS_LOG_FUNCTION (this);
